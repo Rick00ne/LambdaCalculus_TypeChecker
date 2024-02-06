@@ -1,0 +1,286 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>λ-Calculus TypeChecker</title>
+  <script src="main.js"></script>
+  <style>
+  	body {
+  		margin: 0;
+  		padding: 0;
+  	}
+  	.page {
+  		height: 100vh;
+  		min-width: fit-content;
+  		display: flex;
+  		flex-direction: column;
+  		font-family: monospace;
+  	}
+  	.page ::-webkit-scrollbar{
+  		width: 0.5em;
+  		height: 0.5em;
+  	}
+  	.page ::-webkit-scrollbar-track {
+	  margin: 0.2em;
+	}
+  	.header {
+  		font-family: Arial;
+  		text-align: center;
+  		background: 
+  			linear-gradient(
+	  			180deg,
+	  			rgba(182,100,0,1) 0%,
+	  			rgba(0,0,0,1) 30%,
+	  			rgba(0,0,0,1) 60%,
+  				rgba(33,33,33,1) 100%
+  			);
+  		color: darkorange;
+  	}
+  	.header div {
+  		width: max-content;
+  		margin: auto;
+  		padding: 40pt 20pt 20pt;
+  		font-size: 42px;
+  	}
+  	.header span {
+  		display:inline-block;
+  		height: 1em;
+  		line-height: 1em;
+  	}
+  	.logo {
+  		width: 1em;
+  		outline: darkorange solid 0.1em;
+  		border-radius: 50%;
+  		margin-right: 0.2em;
+  	}
+  	.app {
+  		box-shadow: inset black 0 0 50pt;
+  		background: rgba(55,55,55,1);
+  		flex: 1;
+  		font-size: 30px;
+  		padding: 10pt;
+  	}
+  	.program_input {
+  		min-width: max-content;
+  		width: 80vW;
+  		margin: auto;
+  		padding: 10pt;
+  		display: flex;
+  	}
+  	.program_input input {
+  		font:inherit;
+  		background: rgb(211,134,41);
+  		border: inset black 2px;
+  		flex: 1;
+  	}
+  	.program_input button {
+  		margin-left: 0.5em;
+  		width: 3em;
+  	}
+  	.parse_note {
+  		overflow: hidden;
+  	}
+  	.parse_note>div {
+  		overflow-y: scroll;
+  		padding: 0.2em 0.5em;
+  		background: lightPink;
+  		outline: 0.1em solid maroon;
+  		border-radius: 10pt;
+  		width: 70%;
+  		height: 4em;
+  	}
+  	.parse_note span {
+  		font-family: Arial;
+  		color: maroon;
+  		font-weight: bold;
+  	}
+  	.err {
+  		margin: 0.1em auto;
+  		transition: margin 100ms ease-in-out;
+  	}
+  	.err::-webkit-scrollbar-thumb {
+  		background-color: maroon;
+  		border-radius: 0.25em
+  	}
+  	.no_err {
+  		margin: -5em auto 0;
+  		transition: margin 100ms ease-in-out;
+  	}
+  	.tree {
+  		overflow: scroll;
+  		margin: 10pt auto 0;
+  		border: inset black 2px;
+  		height: 250pt;
+  		padding: 5pt;
+  		display: flex;
+  		flex-direction: column-reverse;
+  		align-items: center;
+  		flex-wrap: wrap;
+  		background: rgb(211,134,41);
+  		width: 80vw;
+  		min-width: 15em;
+  		transition: 
+  			background 200ms ease-in-out;
+  	}
+  	.tree>div {
+  		width: max-content;
+  	}
+  	.tree table {
+  		text-align: center;
+  		border-spacing: 0px;
+  		font-size: inherit;
+  	}
+  	.tree>div div,.tree table>tr:nth-child(2)>td {
+  		border-top: solid black;
+  	}
+  	.tree tr {
+  		vertical-align: bottom;
+  	}
+  	.tree * {
+  		padding: 0;
+  	}
+  	.tree span {
+  		color: maroon;
+  		font-weight: bold;
+  	}
+  	.tree.off {
+  		background: rgb(33,33,33);
+  	}
+  	.tree::-webkit-scrollbar-thumb {
+  		background-color: orange;
+  		border: solid darkorange 2px;
+  		border-radius: 0.25em
+  	}
+  	.tree::-webkit-scrollbar-track {
+	  background: rgb(33,33,33);
+	  border: inset black 2px;
+	  margin: 0;
+	}
+	.tree::-webkit-scrollbar-corner {
+		background: rgb(33,33,33);
+	}
+  	.control {
+  		margin: 0 auto 10pt;
+  		max-width: 15%;
+  		min-width: max-content;
+  		padding: 5pt;
+  		border: solid darkorange;
+  		border-radius: 0 0 5pt 5pt;
+  		border-top: none;
+  		background: rgba(255,165,0,0.3);
+  		transition: 
+  			border-color 200ms ease-in-out,
+  			background   200ms ease-in-out;
+  	}
+  	.control div {
+  		margin: auto;
+  		width: max-content;
+  	}
+  	.control span {
+  		display: inline-block;
+  		width: 3em;
+  		min-width: max-content;
+  		text-align: center;
+  	}
+  	.control button {
+  		width: 2em;
+  		margin: 0.1em;
+  	}
+  	.type_vars > div:last-child {
+  		margin: auto;
+  		border: 0.1em solid;
+  		border-radius: 10pt;
+  		padding: 10pt;
+  		width: 80vw;
+  		display: flex;
+  		flex-flow: column wrap;
+  		align-content: flex-start;
+  		line-height: 1em;
+  		height: 4.5em;
+  		overflow-x: scroll;
+  		border-color: darkorange;
+  		background: rgba(255,165,0,0.3);
+  		min-width: 15em;
+  		transition: 
+  			border-color 200ms ease-in-out,
+  			background   200ms ease-in-out;
+  	}
+  	.type_vars > div:last-child::-webkit-scrollbar-thumb {
+  		background-color: orange;
+  		border-radius: 0.25em
+  	}
+  	.type_vars > div:last-child > div {
+  		margin-right: 0.5em;
+  		padding-right: 0.5em;
+  	}
+
+  	.type_vars > div:last-child > div:nth-child(4n):not(:last-child) {
+  		border-right: solid darkorange 0.1em;
+  	}
+  	.type_vars > div:last-child > div:nth-child(4n+3):not(:last-child):not(:nth-last-child(2)) {
+  		border-right: solid darkorange 0.1em;
+  	}
+  	.type_vars > div:last-child > div:nth-child(4n+2):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)) {
+  		border-right: solid darkorange 0.1em;
+  	}
+  	.type_vars > div:last-child > div:nth-child(4n+1):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)):not(:nth-last-child(4)) {
+  		border-right: solid darkorange 0.1em;
+  	}
+  	
+  	.type_vars > div:first-child {
+  		width: 80vw;
+  		margin: auto;
+  		min-width: 15em;
+  		color: white;
+  		font-weight: bold;
+  	}
+  	.type_vars > div.off, .control.off {
+  		border-color: gray;
+  		background: rgba(33,33,33,0.3);
+  	}
+  	button {
+	    border: 0.1em solid darkorange;
+	    border-radius: 0.2em;
+	    font-size: inherit;
+	    color: darkorange;
+	    background: rgba(0,0,0,0.2);
+	}
+	button:hover {
+		background: rgba(0,0,0,0.9);
+	}
+	button:active {
+		background: rgba(0,0,0,0.7);
+	}
+	button:disabled {
+	    border-color: darkgray;
+	    color: darkgray;
+	    background: rgba(255,255,255,0.2);
+	}
+
+  </style>
+</head>
+
+<body>
+  <div id="myapp"></div>
+  <script>
+  var app = Elm.Main.init({
+    node: document.getElementById('myapp')
+  });
+
+  window.addEventListener('input', event => {
+    // capture the value the browser set
+    const target = event.target
+    const { value, selectionStart } = target
+    
+    // wait for Elm to decide what the new value
+    // of the input actually should look like
+    requestAnimationFrame(() => {
+        const newValue = target.value
+        if (value !== newValue) {
+            target.selectionEnd = target.selectionStart =
+                selectionStart - (value.length - newValue.length)
+        }
+    })      
+}, true)
+  </script>
+</body>
+</html>
