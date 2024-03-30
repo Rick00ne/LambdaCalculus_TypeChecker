@@ -29,7 +29,7 @@
 	       else {
 	       	   $message  = mysqli_real_escape_string($conn,$message);
 		       if (mysqli_query($conn, 
-		       	'INSERT INTO Reports(Message) VALUES ('. $message .')'
+		       	"INSERT INTO Reports(Message) VALUES ('".$message ."');"
 			   )) {
 		       	echo json_encode(
                	    ['Message'=>'Thank you for your feedback!']
