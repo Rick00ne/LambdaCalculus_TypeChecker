@@ -537,7 +537,7 @@
 			  .then(data => {
 			    // Handle success
 			    reportOverlayOff();
-			    alert(data);
+			    alert(data.message);
                             console.log("success: ",data);
 			  })
 			  .catch(error => {
