@@ -13,7 +13,6 @@
 		   $username = $_ENV["DB_ADMIN"];
 		   $password = $_ENV["DB_PASS"];
 	       $db_name  = 'lambdatypecheck-database';
-	       $message  = mysqli_real_escape_string($conn,$message);
 
 		   //Establishes the connection
 		   $conn = mysqli_init();
@@ -21,13 +20,14 @@
 		   	$conn, $host, $username,
 		   	$password, $db_name, 3306
 		   );
-	       if (mysqli_connect_errno($conn)) {
+	       if (mysqli_connect_errno()) {
              //header("HTTP/1.0 500 Internal Server Error");
 	       	 echo json_encode(
               ['Message'=>'Connection refused: '.mysqli_connect_error()]
              );
 	       }
 	       else {
+	       	   $message  = mysqli_real_escape_string($conn,$message);
 		       if (mysqli_query($conn, 
 		       	'INSERT INTO Reports(Message) VALUES ('. $message .')'
 			   )) {
