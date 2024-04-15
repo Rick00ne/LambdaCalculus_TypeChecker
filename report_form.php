@@ -23,7 +23,7 @@
 	       if (mysqli_connect_errno()) {
              //header("HTTP/1.0 500 Internal Server Error");
 	       	 echo json_encode(
-              ['Message'=>'Connection refused: '.mysqli_connect_error()]
+              ['message'=>'Connection refused: '.mysqli_connect_error()]
              );
 	       }
 	       else {
@@ -32,13 +32,13 @@
 		       	"INSERT INTO Reports(Message) VALUES ('".$message ."');"
 			   )) {
 		       	echo json_encode(
-               	    ['Message'=>'Thank you for your feedback!']
+               	    ['message'=>'Thank you for your feedback!']
                 );
 		       }
 		       else {
 				//header("HTTP/1.0 500 Internal Server Error");
 				echo json_encode(
-                 ['Message'=>'query failed']
+                 ['message'=>'query failed']
                 );
 			   }
 		   }

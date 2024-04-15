@@ -5313,6 +5313,7 @@ var $author$project$Main$init = function (_v0) {
 	var _v1 = A2($elm$core$Debug$log, 'help', testStr);
 	return _Utils_Tuple2(
 		{
+			contextSubs: _List_Nil,
 			displayRules: true,
 			iNote: '',
 			input: '',
@@ -5380,21 +5381,6 @@ var $elm$core$List$drop = F2(
 			}
 		}
 	});
-var $author$project$Main$Fun = F2(
-	function (a, b) {
-		return {$: 'Fun', a: a, b: b};
-	});
-var $author$project$Main$HasType = function (a) {
-	return {$: 'HasType', a: a};
-};
-var $author$project$Main$Leaf = {$: 'Leaf'};
-var $author$project$Main$LeafC = F3(
-	function (a, b, c) {
-		return {$: 'LeafC', a: a, b: b, c: c};
-	});
-var $author$project$Main$TInf = function (a) {
-	return {$: 'TInf', a: a};
-};
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5429,6 +5415,34 @@ var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
 };
+var $author$project$Main$getIndex = F2(
+	function (a, l) {
+		var found = A2(
+			$elm$core$List$filter,
+			function (x) {
+				return _Utils_eq(x.b, a);
+			},
+			l);
+		return A2(
+			$elm$core$Maybe$map,
+			$elm$core$Tuple$first,
+			$elm$core$List$head(found));
+	});
+var $author$project$Main$Fun = F2(
+	function (a, b) {
+		return {$: 'Fun', a: a, b: b};
+	});
+var $author$project$Main$HasType = function (a) {
+	return {$: 'HasType', a: a};
+};
+var $author$project$Main$Leaf = {$: 'Leaf'};
+var $author$project$Main$LeafC = F3(
+	function (a, b, c) {
+		return {$: 'LeafC', a: a, b: b, c: c};
+	});
+var $author$project$Main$TInf = function (a) {
+	return {$: 'TInf', a: a};
+};
 var $author$project$Main$lookUp = F2(
 	function (a, l) {
 		var found = A2(
@@ -5442,24 +5456,50 @@ var $author$project$Main$lookUp = F2(
 			$elm$core$Tuple$second,
 			$elm$core$List$head(found));
 	});
-var $author$project$Main$showType = function (t) {
-	switch (t.$) {
-		case 'TFree':
-			var str = t.a;
-			return str;
-		case 'Fun':
-			var t1 = t.a;
-			var t2 = t.b;
-			if (t1.$ === 'Fun') {
-				return '(' + ($author$project$Main$showType(t1) + (')→' + $author$project$Main$showType(t2)));
-			} else {
-				return $author$project$Main$showType(t1) + ('→' + $author$project$Main$showType(t2));
-			}
-		default:
-			var n = t.a;
-			return 'T' + $elm$core$String$fromInt(n);
-	}
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $elm$core$String$fromList = _String_fromList;
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
 };
+var $author$project$Main$toSubscript = function (n) {
+	var delta = $elm$core$Char$toCode(
+		_Utils_chr('₀')) - $elm$core$Char$toCode(
+		_Utils_chr('0'));
+	return $elm$core$String$fromList(
+		A2(
+			$elm$core$List$map,
+			function (x) {
+				return $elm$core$Char$fromCode(
+					$elm$core$Char$toCode(x) + delta);
+			},
+			$elm$core$String$toList(
+				$elm$core$String$fromInt(n))));
+};
+var $author$project$Main$showType = F2(
+	function (isLatex, t) {
+		switch (t.$) {
+			case 'TFree':
+				var str = t.a;
+				return str;
+			case 'Fun':
+				var t1 = t.a;
+				var t2 = t.b;
+				var arrow = isLatex ? '$\\to$' : '→';
+				if (t1.$ === 'Fun') {
+					return '(' + (A2($author$project$Main$showType, isLatex, t1) + (')' + (arrow + A2($author$project$Main$showType, isLatex, t2))));
+				} else {
+					return _Utils_ap(
+						A2($author$project$Main$showType, isLatex, t1),
+						_Utils_ap(
+							arrow,
+							A2($author$project$Main$showType, isLatex, t2)));
+				}
+			default:
+				var n = t.a;
+				return isLatex ? ('T$_' + ($elm$core$String$fromInt(n) + '$')) : ('T' + $author$project$Main$toSubscript(n));
+		}
+	});
 var $author$project$Main$typeCompare = F2(
 	function (expected, found) {
 		var _v0 = A2($elm$core$Debug$log, 'found', found);
@@ -5544,7 +5584,7 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 					ty,
 					$author$project$Main$TFree('Nat')) ? _Utils_Tuple3($author$project$Main$Leaf, _List_Nil, 'NAT') : _Utils_Tuple3(
 					$author$project$Main$TypeErr(
-						'Found \'Int\' constant but expected type \'' + ($author$project$Main$showType(ty) + '\'')),
+						'Found \'Int\' constant but expected type \'' + (A2($author$project$Main$showType, false, ty) + '\'')),
 					_List_Nil,
 					'NAT Err');
 			case 'Bool':
@@ -5552,7 +5592,7 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 					ty,
 					$author$project$Main$TFree('Bool')) ? _Utils_Tuple3($author$project$Main$Leaf, _List_Nil, 'BOOL') : _Utils_Tuple3(
 					$author$project$Main$TypeErr(
-						'Found \'Bool\' constant but expected type \'' + ($author$project$Main$showType(ty) + '\'')),
+						'Found \'Bool\' constant but expected type \'' + (A2($author$project$Main$showType, false, ty) + '\'')),
 					_List_Nil,
 					'BOOL Err');
 			case 'Var':
@@ -5572,7 +5612,7 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 						subs,
 						'VAR') : _Utils_Tuple3(
 						$author$project$Main$TypeErr(
-							'Found \'' + ($author$project$Main$showType(found) + ('\' but expected type \'' + ($author$project$Main$showType(ty) + '\'')))),
+							'Found \'' + (A2($author$project$Main$showType, false, found) + ('\' but expected type \'' + (A2($author$project$Main$showType, false, ty) + '\'')))),
 						subs,
 						'VAR Err');
 				} else {
@@ -5657,7 +5697,7 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 				} else {
 					return _Utils_Tuple3(
 						$author$project$Main$TypeErr(
-							'Expected nonfunctional type \'' + ($author$project$Main$showType(ty) + '\' but found functional type (lambda abstraction)')),
+							'Expected nonfunctional type \'' + (A2($author$project$Main$showType, false, ty) + '\' but found functional type (lambda abstraction)')),
 						_List_Nil,
 						'ABS Err');
 				}
@@ -5853,17 +5893,37 @@ var $author$project$Main$typeSub = F2(
 			return $author$project$Main$Tree(t);
 		}
 	});
-var $author$project$Main$expandStepped = F2(
-	function (_v0, passedTypeVars) {
+var $author$project$Main$expandStepped = F3(
+	function (_v0, passedTypeVars, passedConSubs) {
 		var tree = _v0.a;
-		var substitutedP = function (_v6) {
-			var t = _v6.a;
+		var substitutedP = function (_v7) {
+			var t = _v7.a;
 			return t;
 		}(
 			A2(
 				$author$project$Main$typeSub,
 				$author$project$Main$Tree(tree),
 				passedTypeVars)).parent;
+		var enrichedConSubs = _Utils_ap(
+			passedConSubs,
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					$elm$core$List$length(passedConSubs),
+					substitutedP.a)
+				]));
+		var childConSubs = function () {
+			if (_Utils_eq(substitutedP.a, _List_Nil)) {
+				return passedConSubs;
+			} else {
+				var _v6 = A2($author$project$Main$getIndex, substitutedP.a, passedConSubs);
+				if (_v6.$ === 'Nothing') {
+					return enrichedConSubs;
+				} else {
+					return passedConSubs;
+				}
+			}
+		}();
 		var _v1 = $author$project$Main$makeAssumptions(substitutedP);
 		var assums = _v1.a;
 		var assTypeVars = _v1.b;
@@ -5875,7 +5935,7 @@ var $author$project$Main$expandStepped = F2(
 				return _List_fromArray(
 					[
 						{
-						correct: false,
+						conSubs: passedConSubs,
 						subs: allTypeVars,
 						tree: $author$project$Main$Tree(
 							{
@@ -5895,7 +5955,7 @@ var $author$project$Main$expandStepped = F2(
 							if (!_v4.b) {
 								return _List_fromArray(
 									[
-										A2($author$project$Main$expandStepped, child, allTypeVars)
+										A3($author$project$Main$expandStepped, child, allTypeVars, childConSubs)
 									]);
 							} else {
 								var c = _v4.a;
@@ -5903,7 +5963,7 @@ var $author$project$Main$expandStepped = F2(
 								if (!_v5.b) {
 									return _List_fromArray(
 										[
-											A2($author$project$Main$expandStepped, child, allTypeVars)
+											A3($author$project$Main$expandStepped, child, allTypeVars, childConSubs)
 										]);
 								} else {
 									var recent = _v5.a;
@@ -5911,7 +5971,7 @@ var $author$project$Main$expandStepped = F2(
 										accum,
 										_List_fromArray(
 											[
-												A2($author$project$Main$expandStepped, child, recent.subs)
+												A3($author$project$Main$expandStepped, child, recent.subs, recent.conSubs)
 											]));
 								}
 							}
@@ -5970,7 +6030,7 @@ var $author$project$Main$expandStepped = F2(
 						$elm$core$List$length(list) - 1));
 				var laterSteps = $elm$core$List$concat(childrenSteps);
 				var baseStep = {
-					correct: true,
+					conSubs: childConSubs,
 					subs: allTypeVars,
 					tree: $author$project$Main$Tree(
 						{
@@ -5985,7 +6045,7 @@ var $author$project$Main$expandStepped = F2(
 				return _List_fromArray(
 					[
 						{
-						correct: true,
+						conSubs: passedConSubs,
 						subs: allTypeVars,
 						tree: $author$project$Main$Tree(
 							{children: someLeaf, parent: tree.parent, ruleName: rule})
@@ -7748,6 +7808,12 @@ var $author$project$Main$processProgramInput = function (input) {
 		$author$project$Main$transformProgram,
 		$author$project$Main$parse(input));
 };
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Main$reformat = _Platform_outgoingPort(
+	'reformat',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
 		return A2(
@@ -7783,7 +7849,7 @@ var $author$project$Main$selectStep = F2(
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		var defStep = {
-			correct: false,
+			conSubs: _List_Nil,
 			subs: _List_Nil,
 			tree: $author$project$Main$Tree(
 				{
@@ -7805,45 +7871,49 @@ var $author$project$Main$update = F2(
 				var step = getStep(1);
 				var t = step.tree;
 				var s = step.subs;
+				var cs = step.conSubs;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{stepIndex: 1, tree: t, typeVars: s}),
-					$elm$core$Platform$Cmd$none);
+						{contextSubs: cs, stepIndex: 1, tree: t, typeVars: s}),
+					$author$project$Main$reformat(_Utils_Tuple0));
 			case 'StepForward':
 				var i = model.stepIndex + 1;
 				var step = getStep(i);
 				var s = step.subs;
 				var t = step.tree;
+				var cs = step.conSubs;
 				var allowed = _Utils_cmp(
 					model.stepIndex,
 					$elm$core$List$length(model.steps)) < 0;
 				return allowed ? _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{stepIndex: i, tree: t, typeVars: s}),
-					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						{contextSubs: cs, stepIndex: i, tree: t, typeVars: s}),
+					$author$project$Main$reformat(_Utils_Tuple0)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'StepBack':
 				var i = model.stepIndex - 1;
 				var step = getStep(i);
 				var s = step.subs;
 				var t = step.tree;
+				var cs = step.conSubs;
 				var allowed = model.stepIndex > 1;
 				return allowed ? _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{stepIndex: i, tree: t, typeVars: s}),
-					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						{contextSubs: cs, stepIndex: i, tree: t, typeVars: s}),
+					$author$project$Main$reformat(_Utils_Tuple0)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'ExpandWhole':
 				var i = $elm$core$List$length(model.steps);
 				var step = getStep(i);
 				var s = step.subs;
 				var t = step.tree;
+				var cs = step.conSubs;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{stepIndex: i, tree: t, typeVars: s}),
-					$elm$core$Platform$Cmd$none);
+						{contextSubs: cs, stepIndex: i, tree: t, typeVars: s}),
+					$author$project$Main$reformat(_Utils_Tuple0));
 			case 'ChangeInput':
 				var newInput = msg.a;
 				var replacements = _List_fromArray(
@@ -7868,7 +7938,7 @@ var $author$project$Main$update = F2(
 				var processedInput = $author$project$Main$processProgramInput(model.input);
 				var firstStep = function (r) {
 					return {
-						correct: true,
+						conSubs: _List_Nil,
 						subs: _List_Nil,
 						tree: $author$project$Main$Tree(
 							{
@@ -7885,9 +7955,10 @@ var $author$project$Main$update = F2(
 						A2(
 							$elm$core$List$cons,
 							firstStep(r),
-							A2(
+							A3(
 								$author$project$Main$expandStepped,
 								firstStep(r).tree,
+								_List_Nil,
 								_List_Nil)));
 				};
 				if (processedInput.$ === 'Ok') {
@@ -7898,6 +7969,7 @@ var $author$project$Main$update = F2(
 						_Utils_update(
 							model,
 							{
+								contextSubs: _List_Nil,
 								iNote: '',
 								showTreeUI: true,
 								stepIndex: 1,
@@ -7906,7 +7978,7 @@ var $author$project$Main$update = F2(
 								typeVars: _List_Nil,
 								vars: vars
 							}),
-						$elm$core$Platform$Cmd$none);
+						$author$project$Main$reformat(_Utils_Tuple0));
 				} else {
 					var str = processedInput.a;
 					return _Utils_Tuple2(
@@ -7922,7 +7994,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{shortContext: b}),
-					$elm$core$Platform$Cmd$none);
+					$author$project$Main$reformat(_Utils_Tuple0));
 			default:
 				var b = msg.a;
 				var _v5 = A2($elm$core$Debug$log, 'display rules: ', b);
@@ -7930,7 +8002,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{displayRules: b}),
-					$elm$core$Platform$Cmd$none);
+					$author$project$Main$reformat(_Utils_Tuple0));
 		}
 	});
 var $author$project$Main$ChangeInput = function (a) {
@@ -7947,6 +8019,7 @@ var $author$project$Main$SetShortContext = function (a) {
 var $author$project$Main$StepBack = {$: 'StepBack'};
 var $author$project$Main$StepForward = {$: 'StepForward'};
 var $author$project$Main$SubmitInput = {$: 'SubmitInput'};
+var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7961,6 +8034,7 @@ var $elm$html$Html$Attributes$action = function (uri) {
 		'action',
 		_VirtualDom_noJavaScriptUri(uri));
 };
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
@@ -7975,6 +8049,13 @@ var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$form = _VirtualDom_node('form');
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$html$Html$label = _VirtualDom_node('label');
@@ -8044,6 +8125,148 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $author$project$Main$atIndex = F2(
+	function (a, l) {
+		var li = A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (i, e) {
+					return _Utils_Tuple2(i, e);
+				}),
+			l);
+		return A2($author$project$Main$lookUp, a, li);
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$Main$showContext = F4(
+	function (isLatex, c, v, cs) {
+		var toStr = function (n) {
+			var _v8 = A2($author$project$Main$atIndex, n, v);
+			if (_v8.$ === 'Just') {
+				var str = _v8.a;
+				return str;
+			} else {
+				return 'var' + $elm$core$String$fromInt(n);
+			}
+		};
+		var showNormal = function (con) {
+			if (!con.b) {
+				return '';
+			} else {
+				if (!con.b.b) {
+					var _v1 = con.a;
+					var n = _v1.a;
+					var t = _v1.b.a;
+					return toStr(n) + (':' + A2($author$project$Main$showType, isLatex, t));
+				} else {
+					var _v2 = con.a;
+					var n = _v2.a;
+					var t = _v2.b.a;
+					var l = con.b;
+					return toStr(n) + (':' + (A2($author$project$Main$showType, isLatex, t) + (', ' + showNormal(l))));
+				}
+			}
+		};
+		if (cs.$ === 'Nothing') {
+			return A2(
+				$elm$core$Tuple$pair,
+				showNormal(c),
+				cs);
+		} else {
+			var _v4 = cs.a;
+			var subs = _v4.a;
+			var next = _v4.b;
+			var shiftR = F2(
+				function (l, r) {
+					return _Utils_Tuple2(
+						A2(
+							$elm$core$List$take,
+							$elm$core$List$length(l) - 1,
+							l),
+						_Utils_ap(
+							A2(
+								$elm$core$List$drop,
+								$elm$core$List$length(l) - 1,
+								l),
+							r));
+				});
+			var matchBiggest = F2(
+				function (context, out) {
+					matchBiggest:
+					while (true) {
+						var _v5 = A2($author$project$Main$getIndex, context, subs);
+						if (_v5.$ === 'Nothing') {
+							var _v6 = A2(
+								$elm$core$Debug$log,
+								'shifted into',
+								A2(shiftR, context, out));
+							var l = _v6.a;
+							var r = _v6.b;
+							if (_Utils_eq(l, _List_Nil)) {
+								return _Utils_Tuple2(-1, r);
+							} else {
+								var $temp$context = l,
+									$temp$out = r;
+								context = $temp$context;
+								out = $temp$out;
+								continue matchBiggest;
+							}
+						} else {
+							var s = _v5.a;
+							return _Utils_Tuple2(s, out);
+						}
+					}
+				});
+			var gamma = function (n) {
+				return isLatex ? ('$\\Gamma_' + ($elm$core$String$fromInt(n) + '$')) : ('Γ' + $author$project$Main$toSubscript(n));
+			};
+			var _v7 = A2(matchBiggest, c, _List_Nil);
+			var sub = _v7.a;
+			var leftout = _v7.b;
+			var anyLeft = !_Utils_eq(leftout, _List_Nil);
+			var newCs = anyLeft ? $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					_Utils_ap(
+						subs,
+						_List_fromArray(
+							[
+								_Utils_Tuple2(next, c)
+							])),
+					next + 1)) : cs;
+			return A2(
+				$elm$core$Tuple$pair,
+				_Utils_eq(sub, -1) ? showNormal(leftout) : _Utils_ap(
+					gamma(sub),
+					anyLeft ? (', ' + showNormal(leftout)) : ''),
+				newCs);
+		}
+	});
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$showConSubs = F2(
+	function (conSubs, v) {
+		return A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var n = _v0.a;
+				var c = _v0.b;
+				var cs = $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						A2($elm$core$List$take, n, conSubs),
+						0));
+				return A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'Γ' + ($author$project$Main$toSubscript(n) + (' = ' + A4($author$project$Main$showContext, false, c, v, cs).a)))
+						]));
+			},
+			conSubs);
+	});
 var $elm$html$Html$Attributes$colspan = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -8067,10 +8290,6 @@ var $elm$core$List$intersperse = F2(
 			var spersed = A3($elm$core$List$foldr, step, _List_Nil, tl);
 			return A2($elm$core$List$cons, hd, spersed);
 		}
-	});
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
 	});
 var $elm$html$Html$Attributes$rowspan = function (n) {
 	return A2(
@@ -10520,7 +10739,6 @@ var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
 };
-var $elm$core$Char$fromCode = _Char_fromCode;
 var $elm$core$Basics$pow = _Basics_pow;
 var $rtfeldman$elm_hex$Hex$fromStringHelp = F3(
 	function (position, chars, accumulated) {
@@ -10679,10 +10897,6 @@ var $elm$core$Result$map = F2(
 			return $elm$core$Result$Err(e);
 		}
 	});
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
 var $rtfeldman$elm_hex$Hex$fromString = function (str) {
 	if ($elm$core$String$isEmpty(str)) {
 		return $elm$core$Result$Err('Empty strings are not valid hexadecimal strings.');
@@ -11049,145 +11263,8 @@ var $hecrj$html_parser$Html$Parser$run = function (str) {
 		A2($hecrj$html_parser$Html$Parser$oneOrMore, 'node', $hecrj$html_parser$Html$Parser$node),
 		str);
 };
-var $author$project$Main$atIndex = F2(
-	function (a, l) {
-		var li = A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (i, e) {
-					return _Utils_Tuple2(i, e);
-				}),
-			l);
-		return A2($author$project$Main$lookUp, a, li);
-	});
-var $elm$core$String$fromList = _String_fromList;
-var $author$project$Main$getIndex = F2(
-	function (a, l) {
-		var found = A2(
-			$elm$core$List$filter,
-			function (x) {
-				return _Utils_eq(x.b, a);
-			},
-			l);
-		return A2(
-			$elm$core$Maybe$map,
-			$elm$core$Tuple$first,
-			$elm$core$List$head(found));
-	});
-var $author$project$Main$showContext = F3(
-	function (c, v, cs) {
-		var toSubscript = function (n) {
-			var delta = $elm$core$Char$toCode(
-				_Utils_chr('₀')) - $elm$core$Char$toCode(
-				_Utils_chr('0'));
-			return $elm$core$String$fromList(
-				A2(
-					$elm$core$List$map,
-					function (x) {
-						return $elm$core$Char$fromCode(
-							$elm$core$Char$toCode(x) + delta);
-					},
-					$elm$core$String$toList(
-						$elm$core$String$fromInt(n))));
-		};
-		var toStr = function (n) {
-			var _v8 = A2($author$project$Main$atIndex, n, v);
-			if (_v8.$ === 'Just') {
-				var str = _v8.a;
-				return str;
-			} else {
-				return 'var' + $elm$core$String$fromInt(n);
-			}
-		};
-		var showNormal = function (con) {
-			if (!con.b) {
-				return '';
-			} else {
-				if (!con.b.b) {
-					var _v1 = con.a;
-					var n = _v1.a;
-					var t = _v1.b.a;
-					return toStr(n) + (':' + $author$project$Main$showType(t));
-				} else {
-					var _v2 = con.a;
-					var n = _v2.a;
-					var t = _v2.b.a;
-					var l = con.b;
-					return toStr(n) + (':' + ($author$project$Main$showType(t) + (', ' + showNormal(l))));
-				}
-			}
-		};
-		if (cs.$ === 'Nothing') {
-			return A2(
-				$elm$core$Tuple$pair,
-				showNormal(c),
-				cs);
-		} else {
-			var _v4 = cs.a;
-			var subs = _v4.a;
-			var next = _v4.b;
-			var shiftR = F2(
-				function (l, r) {
-					return _Utils_Tuple2(
-						A2(
-							$elm$core$List$take,
-							$elm$core$List$length(l) - 1,
-							l),
-						_Utils_ap(
-							A2(
-								$elm$core$List$drop,
-								$elm$core$List$length(l) - 1,
-								l),
-							r));
-				});
-			var matchBiggest = F2(
-				function (context, out) {
-					matchBiggest:
-					while (true) {
-						var _v5 = A2($author$project$Main$getIndex, context, subs);
-						if (_v5.$ === 'Nothing') {
-							var _v6 = A2(
-								$elm$core$Debug$log,
-								'shifted into',
-								A2(shiftR, context, out));
-							var l = _v6.a;
-							var r = _v6.b;
-							if (_Utils_eq(l, _List_Nil)) {
-								return _Utils_Tuple2(-1, r);
-							} else {
-								var $temp$context = l,
-									$temp$out = r;
-								context = $temp$context;
-								out = $temp$out;
-								continue matchBiggest;
-							}
-						} else {
-							var s = _v5.a;
-							return _Utils_Tuple2(s, out);
-						}
-					}
-				});
-			var _v7 = A2(matchBiggest, c, _List_Nil);
-			var sub = _v7.a;
-			var leftout = _v7.b;
-			var anyLeft = !_Utils_eq(leftout, _List_Nil);
-			var newCs = anyLeft ? $elm$core$Maybe$Just(
-				_Utils_Tuple2(
-					_Utils_ap(
-						subs,
-						_List_fromArray(
-							[
-								_Utils_Tuple2(next, c)
-							])),
-					next + 1)) : cs;
-			return A2(
-				$elm$core$Tuple$pair,
-				_Utils_eq(sub, -1) ? showNormal(leftout) : ('Γ' + (toSubscript(sub) + (anyLeft ? (', ' + showNormal(leftout)) : ''))),
-				newCs);
-		}
-	});
-var $author$project$Main$showTerm = F2(
-	function (t, v) {
+var $author$project$Main$showTerm = F3(
+	function (isLatex, t, v) {
 		var priority = function (term) {
 			switch (term.$) {
 				case 'Lam':
@@ -11214,7 +11291,7 @@ var $author$project$Main$showTerm = F2(
 			case 'Ann':
 				var term = t.a;
 				var ty = t.b;
-				return A2($author$project$Main$showTerm, term, v) + (':' + $author$project$Main$showType(ty));
+				return A3($author$project$Main$showTerm, isLatex, term, v) + (':' + A2($author$project$Main$showType, isLatex, ty));
 			case 'Var':
 				var n = t.a;
 				var _v1 = A2($author$project$Main$atIndex, n, v);
@@ -11228,21 +11305,23 @@ var $author$project$Main$showTerm = F2(
 				var n = t.a;
 				var ty = t.b;
 				var term = t.c;
-				return 'λ' + (A2(
+				var lambda = isLatex ? '$\\lambda$' : 'λ';
+				return lambda + (A3(
 					$author$project$Main$showTerm,
+					isLatex,
 					$author$project$Main$Var(n),
-					v) + (':' + ($author$project$Main$showType(ty) + ('.' + A2($author$project$Main$showTerm, term, v)))));
+					v) + (':' + (A2($author$project$Main$showType, isLatex, ty) + ('.' + A3($author$project$Main$showTerm, isLatex, term, v)))));
 			case 'App':
 				var t1 = t.b;
 				var t2 = t.c;
 				return _Utils_ap(
-					isOpenEnded(t1) ? ('(' + (A2($author$project$Main$showTerm, t1, v) + ')')) : A2($author$project$Main$showTerm, t1, v),
-					(priority(t2) >= 2) ? (' (' + (A2($author$project$Main$showTerm, t2, v) + ')')) : (' ' + A2($author$project$Main$showTerm, t2, v)));
+					isOpenEnded(t1) ? ('(' + (A3($author$project$Main$showTerm, isLatex, t1, v) + ')')) : A3($author$project$Main$showTerm, isLatex, t1, v),
+					(priority(t2) >= 2) ? (' (' + (A3($author$project$Main$showTerm, isLatex, t2, v) + ')')) : (' ' + A3($author$project$Main$showTerm, isLatex, t2, v)));
 			case 'Cond':
 				var c = t.a;
 				var t1 = t.b;
 				var t2 = t.c;
-				return 'if ' + (A2($author$project$Main$showTerm, c, v) + (' then ' + (A2($author$project$Main$showTerm, t1, v) + (' else ' + A2($author$project$Main$showTerm, t2, v)))));
+				return 'if ' + (A3($author$project$Main$showTerm, isLatex, c, v) + (' then ' + (A3($author$project$Main$showTerm, isLatex, t1, v) + (' else ' + A3($author$project$Main$showTerm, isLatex, t2, v)))));
 			case 'Int':
 				var n = t.a;
 				return $elm$core$String$fromInt(n);
@@ -11258,8 +11337,58 @@ var $author$project$Main$showTerm = F2(
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$html$Html$td = _VirtualDom_node('td');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$toLatex = F2(
+	function (rule, children) {
+		return A2(
+			$elm$html$Html$span,
+			_List_Nil,
+			function () {
+				if (children.b && children.b.b) {
+					var premisses = children.a;
+					var _v1 = children.b;
+					var conclusion = _v1.a;
+					return _Utils_ap(
+						_List_fromArray(
+							[
+								$elm$html$Html$text('\\infer')
+							]),
+						_Utils_ap(
+							(rule === '') ? _List_Nil : _List_fromArray(
+								[
+									$elm$html$Html$text('[^\\text{(' + (rule + ')}]'))
+								]),
+							_Utils_ap(
+								_List_fromArray(
+									[
+										A2($elm$html$Html$br, _List_Nil, _List_Nil),
+										$elm$html$Html$text('{\\text{')
+									]),
+								_Utils_ap(
+									_List_fromArray(
+										[conclusion]),
+									_Utils_ap(
+										_List_fromArray(
+											[
+												$elm$html$Html$text('}}'),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												$elm$html$Html$text('{')
+											]),
+										_Utils_ap(
+											_List_fromArray(
+												[premisses]),
+											_List_fromArray(
+												[
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													$elm$html$Html$text('}')
+												])))))));
+				} else {
+					return _List_fromArray(
+						[
+							$elm$html$Html$text('LaTeX conversion error')
+						]);
+				}
+			}());
+	});
 var $elm$virtual_dom$VirtualDom$node = function (tag) {
 	return _VirtualDom_node(
 		_VirtualDom_noScript(tag));
@@ -11300,33 +11429,45 @@ var $hecrj$html_parser$Html$Parser$Util$toVirtualDomEach = function (node) {
 	}
 };
 var $elm$html$Html$tr = _VirtualDom_node('tr');
-var $author$project$Main$showTree_Next = F4(
-	function (_v0, vars, displayRules, contextSubs) {
+var $author$project$Main$showTree_Next = F5(
+	function (isLatex, _v0, vars, displayRules, contextSubs) {
 		var t = _v0.a;
 		var ws = function () {
-			var _v15 = $hecrj$html_parser$Html$Parser$Util$toVirtualDom(
-				A2(
-					$elm$core$Result$withDefault,
-					_List_Nil,
-					$hecrj$html_parser$Html$Parser$run('<td> &emsp; </td>')));
-			if (_v15.b) {
-				var x = _v15.a;
-				var xs = _v15.b;
-				return x;
-			} else {
+			if (isLatex) {
 				return A2(
-					$elm$html$Html$td,
+					$elm$html$Html$span,
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text(' ')
+							A2($elm$html$Html$br, _List_Nil, _List_Nil),
+							$elm$html$Html$text('&'),
+							A2($elm$html$Html$br, _List_Nil, _List_Nil)
 						]));
+			} else {
+				var _v16 = $hecrj$html_parser$Html$Parser$Util$toVirtualDom(
+					A2(
+						$elm$core$Result$withDefault,
+						_List_Nil,
+						$hecrj$html_parser$Html$Parser$run('<td> &emsp; </td>')));
+				if (_v16.b) {
+					var x = _v16.a;
+					var xs = _v16.b;
+					return x;
+				} else {
+					return A2(
+						$elm$html$Html$td,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(' ')
+							]));
+				}
 			}
 		}();
 		var getNext = function (s) {
 			if (s.$ === 'Just') {
-				var _v14 = s.a;
-				var n = _v14.b;
+				var _v15 = s.a;
+				var n = _v15.b;
 				return n;
 			} else {
 				return -1;
@@ -11334,16 +11475,17 @@ var $author$project$Main$showTree_Next = F4(
 		};
 		var _v1 = t.children;
 		if ((_v1.$ === 'Node') && (!_v1.a.b)) {
-			var _v2 = A3($author$project$Main$showContext, t.parent.a, vars, contextSubs);
+			var _v2 = A4($author$project$Main$showContext, isLatex, t.parent.a, vars, contextSubs);
 			var c = _v2.a;
 			var s = _v2.b;
 			return A2(
 				$elm$core$Tuple$pair,
-				$elm$html$Html$text(
-					c + (' ⊢ ' + A2($author$project$Main$showTerm, t.parent.b, vars))),
+				isLatex ? $elm$html$Html$text(
+					'\\text{' + (c + (' $\\vdash$ ' + (A3($author$project$Main$showTerm, true, t.parent.b, vars) + '}')))) : $elm$html$Html$text(
+					c + (' ⊢ ' + A3($author$project$Main$showTerm, false, t.parent.b, vars))),
 				getNext(s));
 		} else {
-			var _v3 = A3($author$project$Main$showContext, t.parent.a, vars, contextSubs);
+			var _v3 = A4($author$project$Main$showContext, isLatex, t.parent.a, vars, contextSubs);
 			var context = _v3.a;
 			var newSubs = _v3.b;
 			var childrenFold = function (ch) {
@@ -11352,13 +11494,13 @@ var $author$project$Main$showTree_Next = F4(
 					F2(
 						function (a, b) {
 							var s = function () {
-								var _v10 = $elm$core$List$head(
+								var _v11 = $elm$core$List$head(
 									$elm$core$List$reverse(b));
-								if (_v10.$ === 'Nothing') {
+								if (_v11.$ === 'Nothing') {
 									return newSubs;
 								} else {
-									var _v11 = _v10.a;
-									var n = _v11.b;
+									var _v12 = _v11.a;
+									var n = _v12.b;
 									if (newSubs.$ === 'Nothing') {
 										return $elm$core$Maybe$Nothing;
 									} else {
@@ -11372,7 +11514,7 @@ var $author$project$Main$showTree_Next = F4(
 								b,
 								_List_fromArray(
 									[
-										A4($author$project$Main$showTree_Next, a, vars, displayRules, s)
+										A5($author$project$Main$showTree_Next, isLatex, a, vars, displayRules, s)
 									]));
 						}),
 					_List_Nil,
@@ -11380,14 +11522,11 @@ var $author$project$Main$showTree_Next = F4(
 			};
 			return A2(
 				$elm$core$Tuple$pair,
-				A2(
-					$elm$html$Html$table,
-					_List_Nil,
+				(isLatex ? $author$project$Main$toLatex(
+					displayRules ? t.ruleName : '') : $elm$html$Html$table(_List_Nil))(
 					_List_fromArray(
 						[
-							A2(
-							$elm$html$Html$tr,
-							_List_Nil,
+							(isLatex ? $elm$html$Html$span(_List_Nil) : $elm$html$Html$tr(_List_Nil))(
 							_Utils_ap(
 								function () {
 									var _v4 = t.children;
@@ -11396,13 +11535,28 @@ var $author$project$Main$showTree_Next = F4(
 											var _var = _v4.a;
 											var ty = _v4.b;
 											var c = _v4.c;
-											return _List_fromArray(
+											return isLatex ? _List_fromArray(
 												[
 													$elm$html$Html$text(
-													A2(
+													'\\text{' + (A3(
 														$author$project$Main$showTerm,
+														true,
 														$author$project$Main$Var(_var),
-														vars) + (':' + ($author$project$Main$showType(ty) + (' ∈ ' + A3($author$project$Main$showContext, c, vars, newSubs).a))))
+														vars) + (':' + (A2($author$project$Main$showType, true, ty) + (' $\\in$ ' + (A4($author$project$Main$showContext, true, c, vars, newSubs).a + '}'))))))
+												]) : _List_fromArray(
+												[
+													A2(
+													$elm$html$Html$td,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(
+															A3(
+																$author$project$Main$showTerm,
+																false,
+																$author$project$Main$Var(_var),
+																vars) + (':' + (A2($author$project$Main$showType, false, ty) + (' ∈ ' + A4($author$project$Main$showContext, false, c, vars, newSubs).a))))
+														]))
 												]);
 										case 'Node':
 											var children = _v4.a;
@@ -11411,8 +11565,11 @@ var $author$project$Main$showTree_Next = F4(
 												ws,
 												A2(
 													$elm$core$List$map,
-													function (_v5) {
+													isLatex ? function (_v5) {
 														var x = _v5.a;
+														return x;
+													} : function (_v6) {
+														var x = _v6.a;
 														return A2(
 															$elm$html$Html$td,
 															_List_Nil,
@@ -11433,11 +11590,11 @@ var $author$project$Main$showTree_Next = F4(
 														]))
 												]);
 										default:
-											return _List_fromArray(
+											return isLatex ? _List_Nil : _List_fromArray(
 												[ws]);
 									}
 								}(),
-								displayRules ? _List_fromArray(
+								(displayRules && (!isLatex)) ? _List_fromArray(
 									[
 										A2(
 										$elm$html$Html$td,
@@ -11451,7 +11608,8 @@ var $author$project$Main$showTree_Next = F4(
 												$elm$html$Html$text('(' + (t.ruleName + ')'))
 											]))
 									]) : _List_Nil)),
-							A2(
+							isLatex ? $elm$html$Html$text(
+							context + (' $\\vdash$ ' + A3($author$project$Main$showTerm, true, t.parent.b, vars))) : A2(
 							$elm$html$Html$tr,
 							_List_Nil,
 							_List_fromArray(
@@ -11459,9 +11617,9 @@ var $author$project$Main$showTree_Next = F4(
 									A2(
 									$elm$html$Html$td,
 									function () {
-										var _v6 = t.children;
-										if (_v6.$ === 'Node') {
-											var children = _v6.a;
+										var _v7 = t.children;
+										if (_v7.$ === 'Node') {
+											var children = _v7.a;
 											return _List_fromArray(
 												[
 													$elm$html$Html$Attributes$colspan(
@@ -11474,22 +11632,22 @@ var $author$project$Main$showTree_Next = F4(
 									_List_fromArray(
 										[
 											$elm$html$Html$text(
-											context + (' ⊢ ' + A2($author$project$Main$showTerm, t.parent.b, vars)))
+											context + (' ⊢ ' + A3($author$project$Main$showTerm, false, t.parent.b, vars)))
 										]))
 								]))
 						])),
 				function () {
-					var _v7 = t.children;
-					if (_v7.$ === 'Node') {
-						var ch = _v7.a;
-						var _v8 = $elm$core$List$head(
+					var _v8 = t.children;
+					if (_v8.$ === 'Node') {
+						var ch = _v8.a;
+						var _v9 = $elm$core$List$head(
 							$elm$core$List$reverse(
 								childrenFold(ch)));
-						if (_v8.$ === 'Nothing') {
+						if (_v9.$ === 'Nothing') {
 							return -1;
 						} else {
-							var _v9 = _v8.a;
-							var n = _v9.b;
+							var _v10 = _v9.a;
+							var n = _v10.b;
 							return n;
 						}
 					} else {
@@ -11498,16 +11656,29 @@ var $author$project$Main$showTree_Next = F4(
 				}());
 		}
 	});
-var $author$project$Main$showTree = F4(
+var $author$project$Main$showLatex = F4(
 	function (_v0, vars, displayRules, contextSubs) {
 		var t = _v0.a;
-		return A4(
+		return A5(
 			$author$project$Main$showTree_Next,
+			true,
 			$author$project$Main$Tree(t),
 			vars,
 			displayRules,
 			contextSubs).a;
 	});
+var $author$project$Main$showTree = F4(
+	function (_v0, vars, displayRules, contextSubs) {
+		var t = _v0.a;
+		return A5(
+			$author$project$Main$showTree_Next,
+			false,
+			$author$project$Main$Tree(t),
+			vars,
+			displayRules,
+			contextSubs).a;
+	});
+var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Main$showTypeVars = function (vars) {
 	return A2(
 		$elm$core$List$map,
@@ -11520,13 +11691,24 @@ var $author$project$Main$showTypeVars = function (vars) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text(
-						$author$project$Main$showType(
-							$author$project$Main$TInf(n)) + (' = ' + $author$project$Main$showType(t)))
+						A2(
+							$author$project$Main$showType,
+							false,
+							$author$project$Main$TInf(n)) + (' = ' + A2($author$project$Main$showType, false, t)))
 					]));
 		},
-		vars);
+		A2(
+			$elm$core$List$sortBy,
+			function (_v1) {
+				var n = _v1.a;
+				return n;
+			},
+			vars));
 };
 var $elm$html$Html$Attributes$spellcheck = $elm$html$Html$Attributes$boolProperty('spellcheck');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$html$Html$Attributes$target = $elm$html$Html$Attributes$stringProperty('target');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
@@ -11539,6 +11721,7 @@ var $author$project$Main$view = function (model) {
 		model.stepIndex,
 		$elm$core$List$length(model.steps));
 	var dui = !model.showTreeUI;
+	var conSubsVisible = model.showTreeUI && ((!_Utils_eq(model.contextSubs, _List_Nil)) && model.shortContext);
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -11551,7 +11734,7 @@ var $author$project$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$id('overlay')
+						$elm$html$Html$Attributes$id('report_overlay')
 					]),
 				_List_fromArray(
 					[
@@ -11559,17 +11742,24 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$id('overlay_background')
+								$elm$html$Html$Attributes$class('overlay_background')
 							]),
 						_List_Nil),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('window')
+								$elm$html$Html$Attributes$class('overlay_window')
 							]),
 						_List_fromArray(
 							[
+								A2(
+								$elm$html$Html$h1,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Report a bug')
+									])),
 								A2(
 								$elm$html$Html$form,
 								_List_fromArray(
@@ -11602,6 +11792,104 @@ var $author$project$Main$view = function (model) {
 												$elm$html$Html$Attributes$value('send')
 											]),
 										_List_Nil)
+									]))
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('export_overlay')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('overlay_background')
+							]),
+						_List_Nil),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('overlay_window')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$h1,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Latex export')
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Requires packages: amsmath, '),
+										A2(
+										$elm$html$Html$a,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$href('https://research.nii.ac.jp/~tatsuta/proof-sty.html'),
+												$elm$html$Html$Attributes$target('_blank')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('proof')
+											])),
+										$elm$html$Html$text('. Use this command:')
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('latex'),
+										A2($elm$html$Html$Attributes$style, 'height', '1.2em')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('\\usepackage{proof,amsmath}')
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('Current step in latex format:')
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('latex')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$id('unindented')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('$$'),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												A4(
+												$author$project$Main$showLatex,
+												model.tree,
+												model.vars,
+												model.displayRules,
+												model.shortContext ? $elm$core$Maybe$Just(
+													_Utils_Tuple2(_List_Nil, 0)) : $elm$core$Maybe$Nothing),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												$elm$html$Html$text('$$')
+											]))
 									]))
 							]))
 					])),
@@ -11911,6 +12199,37 @@ var $author$project$Main$view = function (model) {
 							])),
 						A2(
 						$elm$html$Html$div,
+						_Utils_ap(
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('control')
+								]),
+							dui ? _List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('off')
+								]) : _List_Nil),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$disabled(dui),
+												$elm$html$Html$Attributes$id('export_button')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('LaTeX')
+											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
 						_List_Nil,
 						_List_fromArray(
 							[
@@ -11920,27 +12239,62 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('type_vars')
+								$elm$html$Html$Attributes$class('values')
 							]),
 						_List_fromArray(
 							[
 								A2(
 								$elm$html$Html$div,
-								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Type variables:')
-									])),
-								typeVarsVisible ? A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								$author$project$Main$showTypeVars(model.typeVars)) : A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('off')
+										$elm$html$Html$Attributes$class('vals_container')
 									]),
-								_List_Nil)
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Type variables:')
+											])),
+										typeVarsVisible ? A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										$author$project$Main$showTypeVars(model.typeVars)) : A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('off')
+											]),
+										_List_Nil)
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('vals_container')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Context substitutions:')
+											])),
+										conSubsVisible ? A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										A2($author$project$Main$showConSubs, model.contextSubs, model.vars)) : A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('off')
+											]),
+										_List_Nil)
+									]))
 							]))
 					]))
 			]));

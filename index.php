@@ -22,26 +22,39 @@
   		width: 15px;
   		height: 15px;
   	}
-  	#overlay {
+  	#report_overlay, #export_overlay {
 	  	display: none;
-	}
-	#overlay_background {
-		position: fixed;
-		width: 100%;
-		height: 100%;
-		top:0;
-		left:0;
-		background-color: rgba(0,0,0,0.9);
-	}
-	#overlay .window {
-		position: fixed;
+  	}
+  	.overlay_background {
+  		position: fixed;
+  		width: 100%;
+  		height: 100%;
+  		top:0;
+  		left:0;
+  		background-color: rgba(0,0,0,0.9);
+  	}
+  	/*#report_overlay .overlay_window, #export_overlay*/ .overlay_window {
 	    background: aqua;
 	    width: max-content;
 	    padding: 1em;
-	    top: 50%;
-	    left: 50%;
-	    transform: translate(-50%,-50%);
-	}
+  	}
+    .overlay_window {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+    }
+    .latex{
+      user-select: all;
+      overflow-y: scroll;
+      margin: 0 auto;
+      border: inset black 2px;
+      height: 250pt;
+      padding: 5pt;
+      background: white;
+      width: 50vw;
+      min-width: 1000px;
+    }
   	.header {
   		font-family: Arial;
   		text-align: center;
@@ -171,8 +184,7 @@
   	}
   	.zoom {
   		margin: 10pt auto 0;
-  		max-width: 15%;
-  		min-width: max-content;
+  		width: max-content;
   		padding: 5pt;
   		border: solid darkorange;
   		border-radius: 5pt 5pt 0 0;
@@ -268,9 +280,8 @@
 		color: darkorange;
 	}
   	.control {
-  		margin: 0 auto 10pt;
-  		max-width: 15%;
-  		min-width: max-content;
+  		margin: 0 auto;
+  		width: max-content;
   		padding: 5pt;
   		border: solid darkorange;
   		border-radius: 0 0 5pt 5pt;
@@ -283,8 +294,6 @@
   	.control div {
   		margin: auto;
   		width: max-content;
-  		display: flex;
-  		align-items: center;
   	}
   	.control span {
   		display: inline-block;
@@ -342,17 +351,20 @@
 	    background: rgba(255,255,255,0.2);
   	}
   	.control:not(.off) label:hover {
-		background: rgba(0,0,0,0.9);
-	}
+		  background: rgba(0,0,0,0.9);
+	  }
+    #export_button{
+      width: max-content;
+    }
   	/*.control span ~ label {
   		grid-template-columns: 1em auto;
   	}*/
-  	.type_vars > div:last-child {
+  	.vals_container > div:last-child {
+      text-wrap: nowrap;
   		margin: auto;
   		border: 0.1em solid;
   		border-radius: 10pt;
   		padding: 10pt;
-  		width: 80vw;
   		display: flex;
   		flex-flow: column wrap;
   		align-content: flex-start;
@@ -361,63 +373,66 @@
   		overflow-x: scroll;
   		border-color: darkorange;
   		background: rgba(255,165,0,0.3);
-  		min-width: 15em;
   		transition: 
   			border-color 200ms ease-in-out,
   			background   200ms ease-in-out;
   	}
-  	.type_vars > div:last-child::-webkit-scrollbar-thumb {
+  	.vals_container > div:last-child::-webkit-scrollbar-thumb {
   		background-color: orange;
   		border-radius: 0.25em
   	}
-  	.type_vars > div:last-child > div {
+  	.vals_container > div:last-child > div {
   		margin-right: 0.5em;
   		padding-right: 0.5em;
   	}
-
-  	.type_vars > div:last-child > div:nth-child(4n):not(:last-child) {
+  	.vals_container > div:last-child > div:nth-child(4n):not(:last-child) {
   		border-right: solid darkorange 0.1em;
   	}
-  	.type_vars > div:last-child > div:nth-child(4n+3):not(:last-child):not(:nth-last-child(2)) {
+  	.vals_container > div:last-child > div:nth-child(4n+3):not(:last-child):not(:nth-last-child(2)) {
   		border-right: solid darkorange 0.1em;
   	}
-  	.type_vars > div:last-child > div:nth-child(4n+2):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)) {
+  	.vals_container > div:last-child > div:nth-child(4n+2):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)) {
   		border-right: solid darkorange 0.1em;
   	}
-  	.type_vars > div:last-child > div:nth-child(4n+1):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)):not(:nth-last-child(4)) {
+  	.vals_container > div:last-child > div:nth-child(4n+1):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)):not(:nth-last-child(4)) {
   		border-right: solid darkorange 0.1em;
   	}
-  	
-  	.type_vars > div:first-child {
-  		width: 80vw;
-  		margin: auto;
-  		min-width: 15em;
+  	.vals_container > div:first-child {
   		color: white;
   		font-weight: bold;
   	}
-  	.type_vars > div.off, .control.off, .zoom.off {
+  	.vals_container > div.off, .control.off, .zoom.off {
   		border-color: gray;
   		background: rgba(33,33,33,0.3);
   		color: darkgray;
   	}
+    .vals_container{
+      min-width: 15em;
+      padding: 1em;
+      width: 40vw;
+    }
+    .values {
+      display: flex;
+      justify-content: center;
+    }
   	button {
 	    border: 0.1em solid darkorange;
 	    border-radius: 0.2em;
 	    font-size: inherit;
 	    color: darkorange;
 	    background: rgba(0,0,0,0.2);
-	}
-	button:hover {
-		background: rgba(0,0,0,0.9);
-	}
-	button:active {
-		background: rgba(0,0,0,0.7);
-	}
-	button:disabled {
-	    border-color: darkgray;
-	    color: darkgray;
-	    background: rgba(255,255,255,0.2);
-	}
+  	}
+  	button:hover {
+  		background: rgba(0,0,0,0.9);
+  	}
+  	button:active {
+  		background: rgba(0,0,0,0.7);
+  	}
+  	button:disabled {
+  	    border-color: darkgray;
+  	    color: darkgray;
+  	    background: rgba(255,255,255,0.2);
+  	}
 
   </style>
 </head>
@@ -449,12 +464,66 @@
 	  var zoom = 30;
 	  var minusButton = document.getElementById("zoom_minus");
 	  var plusButton = document.getElementById("zoom_plus");
-	  var reportOverlay = document.getElementById("overlay");
+	  var reportOverlay = document.getElementById("report_overlay");
+    var exportOverlay = document.getElementById("export_overlay");
+    var unindented = document.getElementById("unindented");
+    var formated = document.createElement("div");
+
+    app.ports.reformat.subscribe(function(){
+      requestAnimationFrame(() => {
+          reformat();
+      }) 
+    });
+
+    function reformat(){
+      console.log("REFORMATTING!!!")
+
+      var lines = unindented.innerHTML.split("<br>");
+      console.log(lines);
+      var i = 0;
+      var len = lines.length;
+      var indent = 0;
+      var arePremisses = false;
+      while (i<len){
+        var line = lines[i];
+        if (line.startsWith('}')){
+          lines[i]=("&nbsp;".repeat(indent-1))+lines[i];
+          indent-=3;
+        }
+        else if (line.startsWith('&amp')){
+          console.log(line);
+          lines[i]=("&nbsp;".repeat(indent-1))+lines[i];
+        }
+        else{
+          lines[i]=("&nbsp;".repeat(indent))+lines[i];
+          if (arePremisses){
+            arePremisses = false;
+            indent++;
+          }
+          if (line.includes("\\infer")){
+            console.log("indenting...")
+            indent += 2;
+            i++;
+            lines[i]=("&nbsp;".repeat(indent))+lines[i];
+            arePremisses = true;
+          }
+        }
+        i++;
+      }
+      formated.innerHTML=lines.join("<br>");
+      unindented.insertAdjacentElement("afterend",formated);
+      unindented.style.display="none";
+    }
 
 	  plusButton.onclick = zoomIn;
 	  minusButton.onclick = zoomOut;
 	  document.getElementById("report_button").onclick = reportOverlayOn;
-	  document.getElementById("overlay_background").onclick= reportOverlayOff;
+    document.getElementById("export_button").onclick = exportOverlayOn;
+    const elems = document.getElementsByClassName("overlay_background");
+    for (let i = 0; i < elems.length; i++) {
+      elems[i].onclick = function()
+        {this.parentElement.style.display = "none";}
+    }
 
 	  function refreshSize(){
 	    treeDiv.style.fontSize=zoom+"px";
@@ -492,6 +561,14 @@
 	  function reportOverlayOff(){
 	  	reportOverlay.style.display = "none";
 	  }
+
+    function exportOverlayOn(){
+      exportOverlay.style.display = "block";
+    }
+
+    function exportOverlayOff(){
+      exportOverlay.style.display = "none";
+    }
   </script>
   <script src="validate.min.js"></script>
   <script>
