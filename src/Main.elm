@@ -2,9 +2,9 @@ port module Main exposing (..)
 
 
 import Browser
-import Html exposing (Html, button, div, text, table, tr, td, textarea, span, input, label, form, h1, a, br)
+import Html exposing (Html, button, div, text, table, tr, td, textarea, span, input, label, form, h1, h2, a, br, p)
 import Html.Events exposing (onClick, onInput, onCheck)
-import Html.Attributes exposing (id, colspan, rowspan, style, placeholder, value, size, disabled, class, spellcheck, type_, checked, method, name, action, href, target)
+import Html.Attributes exposing (id, colspan, rowspan, style, placeholder, value, size, disabled, class, spellcheck, type_, checked, method, name, action, href, target, readonly, rows, cols)
 import List exposing (filter, intersperse, length, head, tail,  map, member, all, foldl, reverse, concat, take, drop)
 import Debug exposing (toString)
 import Html.Parser
@@ -75,7 +75,7 @@ type Term
   | Lam Int Type Term
   | App Int Term Term
   | Cond Term Term Term
-  | Int Int
+  | Nat Int
   | Bool Bool
 
 type alias Step = {tree: Tree, subs: List (Int,Type), conSubs: List (Int,Context)}
@@ -85,10 +85,6 @@ type alias Step = {tree: Tree, subs: List (Int,Type), conSubs: List (Int,Context
 
 init :() -> (Model, Cmd Msg)
 init _ =
-  let
-    testStr = "x0:Int→Int→Bool, x1:Bool, xyz:Int ⊢ λy:Int.if (x0 7 13) then y else 0 5 : Int"
-    _ = Debug.log "help" (testStr)
-  in
   ( { tree= Tree {
          parent=
           ([],Ann 
@@ -124,7 +120,7 @@ makeAssumptions (c,t) =
             [Tree {parent=(c,Ann fTerm (Fun (TInf n) ty)),children=(Node []),ruleName=""}
             ,Tree {parent=(c,Ann pTerm (TInf n)),children=(Node []),ruleName=""}
             ]),[],"APP")
-        Int _->
+        Nat _->
           if ty==(TFree "Nat")
             then (Leaf,[],"NAT")
             else (TypeErr ("Found 'Int' constant but expected type '"++showType False ty++"'"),[],"NAT Err")
@@ -202,7 +198,7 @@ expandStepped (Tree tree) passedTypeVars passedConSubs=
           (\steps ->
             case reverse steps of
               [] ->
-                Tree  { parent=([],Int (-1))
+                Tree  { parent=([],Nat (-1))
                       , children=TypeErr "Internal Error! (please report this to feedback, if you get this error)"
                       , ruleName=""}
               last::_ ->
@@ -241,16 +237,19 @@ typeSub (Tree t) subs=
             Fun ty1 ty2 ->
               Fun (tySub ty1) (tySub ty2)
             _ -> ty0
+        tempT = {t | parent= (first t.parent,Ann t1 (tySub ty))}
       in
-      Tree {t | parent=(first t.parent,Ann t1 (tySub ty))}
+      case t.children of
+        Node ch ->
+          Tree { tempT | children = Node (map (\x-> typeSub x subs) ch)}
+        LeafC n ty2 c ->
+          Tree { tempT | children = LeafC n (tySub ty2) c}
+        _ -> Tree tempT
     _ -> Tree t
     
 typeCompare : Type -> Type -> (Bool,List (Int,Type))
 typeCompare expected found=
-  let
-    _ = Debug.log "found" found
-  in
-  case (Debug.log "expected" expected) of
+  case expected of
     TFree ty ->
       if found==expected
         then (True,[])
@@ -341,9 +340,28 @@ update msg model =
     SubmitInput ->
       let
         processedInput = processProgramInput model.input
-        newSteps r = Debug.log
-                        "steps"
-                        ((firstStep r)::(expandStepped (firstStep r).tree [] []))
+        newSteps r = 
+          let
+            steps = expandStepped (firstStep r).tree [] []
+            laststep =
+              case (take 1 (reverse steps)) of
+                []     -> []
+                step::_ ->
+                  let
+                    newTree = (typeSub step.tree step.subs)
+                  in
+                  if (newTree == step.tree) then
+                    []
+                  else
+                    [ { step | 
+                          tree = newTree,
+                          subs = [] 
+                      }
+                    ]
+          in
+          Debug.log
+            "steps"
+            (((firstStep r)::steps)++laststep)
         firstStep r = {tree=Tree{parent=r,children=Node [],ruleName=""},subs=[],conSubs=[]}
       in
       case processedInput of
@@ -367,14 +385,8 @@ update msg model =
           ,Cmd.none
           )
     SetShortContext b ->
-      let
-        _ = Debug.log "substitute context: " b
-      in
       ({model | shortContext = b},reformat ())
     SetDisplayRules b ->
-      let
-        _ = Debug.log "display rules: " b
-      in
       ({model | displayRules = b},reformat ())
 
 selectStep : Int -> List Step -> Maybe Step
@@ -427,36 +439,100 @@ view model =
           , div [ class "overlay_window"]
                 [ h1  []
                       [ text "Latex export" ]
-                , div []
-                      [ text "Requires packages: amsmath, " 
-                      , a [ href "https://research.nii.ac.jp/~tatsuta/proof-sty.html"
-                          , target "_blank"
+                , div 
+                    []
+                    [ div []
+                          [ text "Requires packages: amsmath, " 
+                          , a [ href "https://research.nii.ac.jp/~tatsuta/proof-sty.html"
+                              , target "_blank"
+                              ]
+                              [ text "proof" ]
+                          , text ". Use this command:"
                           ]
-                          [ text "proof" ]
-                      , text ". Use this command:"
-                      ]
-                , div [ class "latex", style "height" "1.2em" ]
-                      [ text "\\usepackage{proof,amsmath}" ]
-                , div []
-                      [ text "Current step in latex format:" ]
-                , div [ class "latex" ]
-                      [ div [ id "unindented" ] 
-                            [ text "$$"
-                            , br [][] 
-                            , showLatex 
-                                model.tree
-                                model.vars
-                                model.displayRules
-                                (if model.shortContext
-                                  then
-                                    Just ([],0)
-                                  else
-                                    Nothing
-                                )
-                            , br [][]
-                            , text "$$"
-                            ]
-                      ]
+                    , textarea [ class "latex", rows 1, readonly True, cols 100 ]
+                          [ text "\\usepackage{proof,amsmath}" ]
+                    , div []
+                          [ text "Current step in latex format:" ]
+                    , div [ id "unindented" ] 
+                          [ text "$$"
+                          , br [][] 
+                          , showLatex 
+                              model.tree
+                              model.vars
+                              model.displayRules
+                              (if model.shortContext
+                                then
+                                  Just ([],0)
+                                else
+                                  Nothing
+                              )
+                          , br [][]
+                          , text "$$"
+                          ]
+                    , textarea [ class "latex", id "latex_tree", readonly True, cols 100 ] []
+                    ]
+                ]
+          ]
+      , div
+          [ id "help_overlay"]
+          [ div [ class "overlay_background" ][]
+          , div [ class "overlay_window" ]
+                [ h1  []
+                      [ text "How to use" ]
+                , div
+                    []
+                    [ h2  []
+                          [ text "What is this?" ]
+                    , p   []
+                          [ text 
+                              """
+                              Visualization tool for simply typed λ
+                              calculus type derivation trees.
+                              """
+                          ]
+                    , h2  []
+                          [ text "Why?" ]
+                    , p   []
+                          [ text 
+                              """
+                              Because \"LAMBDA: Leading Advancements in Molecular
+                              Biochemistry and Dimensional Astrophysics.\" - Black Mesa
+                              """
+                          ]
+                    , h2  []
+                          [ text "How?" ]
+                    , p   []
+                          [ text "Enter your λ calculus program into the input field."]
+                    , p   []
+                          [ text "Shortcuts:"
+                          , br [][]
+                          , text "\\l : λ"
+                          , br [][]
+                          , text "-> : →"
+                          , br [][]
+                          , text "|- : ⊢"
+                          ]
+                    , p   []
+                          [ text 
+                              """
+                              Then you can proceed to the type derivation tree section
+                              where you can walk trough the construction of the tree.
+                              You can export the shown tree to LaTeX from here as well.
+                              """
+                          ]
+                    , p   []
+                          [ text
+                              """
+                              On the bottom part of the page there are sections for any
+                              created type variables and context substitutions for the
+                              currently selected step of the derivation tree.
+                              """
+                          ]
+                    , h2  []
+                          [ text "Syntax"]
+                    , p   []
+                          []
+                    ]
                 ]
           ]
       , div 
@@ -469,6 +545,8 @@ view model =
                 , span  []
                         [text "CALCULUS TypeChecker"]
                 ]
+          , div []
+                [ button [ id "help_button"] [] ]
           ]
       , div                                           --App
           [ class "app" ]
@@ -667,7 +745,11 @@ showTree_Next isLatex (Tree t) vars displayRules contextSubs =
                           (if isLatex then \(x,_)-> x else \(x,_)->td [] [x])
                           (childrenFold children)
                         )
-                    TypeErr str -> [ span [] [text str] ]
+                    TypeErr str ->
+                      if isLatex then
+                        [text ("\\text{"++str++"}")]
+                      else
+                        [ span [] [text str] ]
                     _ -> if isLatex then [] else [ws]
                   )++if displayRules && not isLatex then
                        [td [rowspan 2, class "rule"][text ("("++t.ruleName++")")]]
@@ -766,7 +848,7 @@ showTerm isLatex t v =
       )
     Cond c t1 t2 ->
       "if "++showTerm isLatex c v++" then "++showTerm isLatex t1 v++" else "++showTerm isLatex t2 v
-    Int n -> fromInt n
+    Nat n -> fromInt n
     Bool b-> case b of 
       True -> "true"
       False -> "false"
@@ -818,7 +900,7 @@ showContext isLatex c v cs =
           case (getIndex context subs) of
             Nothing ->
               let
-                (l,r) =  Debug.log "shifted into" (shiftR context out)
+                (l,r) =  shiftR context out
               in
               if l == []
                 then
@@ -918,15 +1000,12 @@ programP =
 
 contextProgramP : Parser (ParsedContext,ParsedTerm,Type)
 contextProgramP = 
-  let
-    tp = Debug.log "parsing" termP
-  in
   Parser.succeed (\c te ty -> (c,te,ty)) 
     |= contextP 
     |. Parser.spaces
     |. Parser.symbol "⊢"
     |. Parser.spaces
-    |= tp--termP
+    |= termP
     |. Parser.spaces
     |. Parser.symbol ":"
     |. Parser.spaces
@@ -956,7 +1035,7 @@ contextP =
 
 contextItemP : Parser (String,Type)
 contextItemP =
-  Parser.succeed (\n t -> (n,t))
+  Parser.succeed pair
     |= varP
     |. Parser.spaces
     |. Parser.symbol ":"
@@ -967,21 +1046,27 @@ varP : Parser String
 varP =
   Parser.variable
     { start = Char.isLower
-    , inner = \c -> Char.isAlphaNum c || c=='_'
+    , inner = \c -> Char.isAlphaNum c
     , reserved = Set.fromList ["λ","if","then","else","true","false"]
     }
-
 
 typeP : Parser Type
 typeP =
   Pratt.expression
     { oneOf = 
-      [ Pratt.constant (Parser.keyword "Nat") (TFree "Nat")
-      , Pratt.constant (Parser.keyword "Bool") (TFree "Bool")
+      [ Pratt.literal (Parser.succeed TFree |= freeType)
       , brcType
       ]
     , andThenOneOf = [ Pratt.infixRight 10 (Parser.symbol "→") (Fun) ]
     , spaces = Parser.spaces}
+
+freeType : Parser String
+freeType =
+  Parser.variable
+    { start = Char.isUpper
+    , inner = Char.isAlphaNum
+    , reserved = Set.empty
+    }
 
 brcType : Pratt.Config Type -> Parser Type
 brcType config =
@@ -1009,9 +1094,6 @@ termP =
 
 brcTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
 brcTerm config =
-  let 
-    _ = Debug.log "bracket term parser" config
-  in
   Parser.succeed identity
     |. Parser.symbol "("
     |= Pratt.subExpression 0 config
@@ -1019,9 +1101,6 @@ brcTerm config =
 
 condTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
 condTerm config =
-  let 
-    _ = Debug.log "condition term parser" config
-  in
   Parser.succeed CondPT
     |. Parser.keyword "if"
     |. Parser.spaces
@@ -1037,9 +1116,6 @@ condTerm config =
 
 lamTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
 lamTerm config = 
-  let 
-    _ = Debug.log "lambda term parser" config
-  in
   Parser.succeed LamPT
     |. Parser.symbol "λ"
     |. Parser.spaces
@@ -1096,7 +1172,7 @@ transformTIter pt allVars scopeVars nextVarIndex nextAppIndex =
           transformTIter nextTerm av scopeVars nv na
         Result.Err str ->
           Result.Err str
-    getT r = (\(_,_,(_,t,_))->t) (withDefault (0,0,([],Int 404,[])) r)
+    getT r = (\(_,_,(_,t,_))->t) (withDefault (0,0,([],Nat 404,[])) r)
     find v l = filter (\e -> e>=0) (map (\(i,e) -> if (v==e) then i else -1) l)
   in
   case pt of
@@ -1147,7 +1223,7 @@ transformTIter pt allVars scopeVars nextVarIndex nextAppIndex =
         err ->
           err
     IntPT val ->
-      Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Int val,allVars))
+      Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Nat val,allVars))
     BoolPT val ->
       Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Bool val,allVars))
 

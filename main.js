@@ -5305,12 +5305,9 @@ var $author$project$Main$TFree = function (a) {
 var $author$project$Main$Tree = function (a) {
 	return {$: 'Tree', a: a};
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
-	var testStr = 'x0:Int→Int→Bool, x1:Bool, xyz:Int ⊢ λy:Int.if (x0 7 13) then y else 0 5 : Int';
-	var _v1 = A2($elm$core$Debug$log, 'help', testStr);
 	return _Utils_Tuple2(
 		{
 			contextSubs: _List_Nil,
@@ -5343,8 +5340,8 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$Int = function (a) {
-	return {$: 'Int', a: a};
+var $author$project$Main$Nat = function (a) {
+	return {$: 'Nat', a: a};
 };
 var $author$project$Main$TypeErr = function (a) {
 	return {$: 'TypeErr', a: a};
@@ -5502,14 +5499,12 @@ var $author$project$Main$showType = F2(
 	});
 var $author$project$Main$typeCompare = F2(
 	function (expected, found) {
-		var _v0 = A2($elm$core$Debug$log, 'found', found);
-		var _v1 = A2($elm$core$Debug$log, 'expected', expected);
-		switch (_v1.$) {
+		switch (expected.$) {
 			case 'TFree':
-				var ty = _v1.a;
+				var ty = expected.a;
 				return _Utils_eq(found, expected) ? _Utils_Tuple2(true, _List_Nil) : _Utils_Tuple2(false, _List_Nil);
 			case 'TInf':
-				var i = _v1.a;
+				var i = expected.a;
 				return _Utils_Tuple2(
 					true,
 					_List_fromArray(
@@ -5517,17 +5512,17 @@ var $author$project$Main$typeCompare = F2(
 							_Utils_Tuple2(i, found)
 						]));
 			default:
-				var ty1 = _v1.a;
-				var ty2 = _v1.b;
+				var ty1 = expected.a;
+				var ty2 = expected.b;
 				if (found.$ === 'Fun') {
 					var tyX = found.a;
 					var tyY = found.b;
-					var _v3 = A2($author$project$Main$typeCompare, ty2, tyY);
-					var b2 = _v3.a;
-					var s2 = _v3.b;
-					var _v4 = A2($author$project$Main$typeCompare, ty1, tyX);
-					var b1 = _v4.a;
-					var s1 = _v4.b;
+					var _v2 = A2($author$project$Main$typeCompare, ty2, tyY);
+					var b2 = _v2.a;
+					var s2 = _v2.b;
+					var _v3 = A2($author$project$Main$typeCompare, ty1, tyX);
+					var b1 = _v3.a;
+					var s1 = _v3.b;
 					return _Utils_Tuple2(
 						b1 && b2,
 						_Utils_ap(s1, s2));
@@ -5579,7 +5574,7 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 							])),
 					_List_Nil,
 					'APP');
-			case 'Int':
+			case 'Nat':
 				return _Utils_eq(
 					ty,
 					$author$project$Main$TFree('Nat')) ? _Utils_Tuple3($author$project$Main$Leaf, _List_Nil, 'NAT') : _Utils_Tuple3(
@@ -5878,17 +5873,49 @@ var $author$project$Main$typeSub = F2(
 						return ty0;
 				}
 			};
-			return $author$project$Main$Tree(
-				_Utils_update(
-					t,
-					{
-						parent: _Utils_Tuple2(
-							t.parent.a,
-							A2(
-								$author$project$Main$Ann,
-								t1,
-								tySub(ty)))
-					}));
+			var tempT = _Utils_update(
+				t,
+				{
+					parent: _Utils_Tuple2(
+						t.parent.a,
+						A2(
+							$author$project$Main$Ann,
+							t1,
+							tySub(ty)))
+				});
+			var _v3 = t.children;
+			switch (_v3.$) {
+				case 'Node':
+					var ch = _v3.a;
+					return $author$project$Main$Tree(
+						_Utils_update(
+							tempT,
+							{
+								children: $author$project$Main$Node(
+									A2(
+										$elm$core$List$map,
+										function (x) {
+											return A2($author$project$Main$typeSub, x, subs);
+										},
+										ch))
+							}));
+				case 'LeafC':
+					var n = _v3.a;
+					var ty2 = _v3.b;
+					var c = _v3.c;
+					return $author$project$Main$Tree(
+						_Utils_update(
+							tempT,
+							{
+								children: A3(
+									$author$project$Main$LeafC,
+									n,
+									tySub(ty2),
+									c)
+							}));
+				default:
+					return $author$project$Main$Tree(tempT);
+			}
 		} else {
 			return $author$project$Main$Tree(t);
 		}
@@ -5988,7 +6015,7 @@ var $author$project$Main$expandStepped = F3(
 									children: $author$project$Main$TypeErr('Internal Error! (please report this to feedback, if you get this error)'),
 									parent: _Utils_Tuple2(
 										_List_Nil,
-										$author$project$Main$Int(-1)),
+										$author$project$Main$Nat(-1)),
 									ruleName: ''
 								});
 						} else {
@@ -6053,6 +6080,7 @@ var $author$project$Main$expandStepped = F3(
 					]);
 		}
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (result.$ === 'Ok') {
@@ -6133,6 +6161,10 @@ var $elm$parser$Parser$Advanced$keeper = F2(
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$apL, parseFunc, parseArg);
 	});
 var $elm$parser$Parser$keeper = $elm$parser$Parser$Advanced$keeper;
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var $elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
 var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
 	function (isGood, offset, row, col, s0) {
@@ -6503,14 +6535,6 @@ var $author$project$Main$brcType = function (config) {
 			A2($dmy$elm_pratt_parser$Pratt$subExpression, 0, config),
 			$elm$parser$Parser$symbol(')')));
 };
-var $dmy$elm_pratt_parser$Pratt$Advanced$constant = F3(
-	function (constantParser, e, _v0) {
-		return A2(
-			$elm$parser$Parser$Advanced$map,
-			$elm$core$Basics$always(e),
-			constantParser);
-	});
-var $dmy$elm_pratt_parser$Pratt$constant = $dmy$elm_pratt_parser$Pratt$Advanced$constant;
 var $dmy$elm_pratt_parser$Pratt$Advanced$Config = function (a) {
 	return {$: 'Config', a: a};
 };
@@ -6522,215 +6546,14 @@ var $dmy$elm_pratt_parser$Pratt$Advanced$expression = function (config) {
 			{andThenOneOf: config.andThenOneOf, oneOf: config.oneOf, spaces: config.spaces}));
 };
 var $dmy$elm_pratt_parser$Pratt$expression = $dmy$elm_pratt_parser$Pratt$Advanced$expression;
-var $dmy$elm_pratt_parser$Pratt$Advanced$infixHelp = F4(
-	function (_v0, operator, apply, config) {
-		var leftPrecedence = _v0.a;
-		var rightPrecedence = _v0.b;
-		return _Utils_Tuple2(
-			leftPrecedence,
-			function (left) {
-				return A2(
-					$elm$parser$Parser$Advanced$keeper,
-					A2(
-						$elm$parser$Parser$Advanced$ignorer,
-						$elm$parser$Parser$Advanced$succeed(
-							apply(left)),
-						operator),
-					A2($dmy$elm_pratt_parser$Pratt$Advanced$subExpression, rightPrecedence, config));
-			});
-	});
-var $dmy$elm_pratt_parser$Pratt$Advanced$infixRight = function (precedence) {
-	return $dmy$elm_pratt_parser$Pratt$Advanced$infixHelp(
-		_Utils_Tuple2(precedence, precedence - 1));
-};
-var $dmy$elm_pratt_parser$Pratt$infixRight = $dmy$elm_pratt_parser$Pratt$Advanced$infixRight;
-var $elm$parser$Parser$ExpectingKeyword = function (a) {
-	return {$: 'ExpectingKeyword', a: a};
-};
-var $elm$parser$Parser$Advanced$keyword = function (_v0) {
-	var kwd = _v0.a;
-	var expecting = _v0.b;
-	var progress = !$elm$core$String$isEmpty(kwd);
-	return $elm$parser$Parser$Advanced$Parser(
-		function (s) {
-			var _v1 = A5($elm$parser$Parser$Advanced$isSubString, kwd, s.offset, s.row, s.col, s.src);
-			var newOffset = _v1.a;
-			var newRow = _v1.b;
-			var newCol = _v1.c;
-			return (_Utils_eq(newOffset, -1) || (0 <= A3(
-				$elm$parser$Parser$Advanced$isSubChar,
-				function (c) {
-					return $elm$core$Char$isAlphaNum(c) || _Utils_eq(
-						c,
-						_Utils_chr('_'));
-				},
-				newOffset,
-				s.src))) ? A2(
-				$elm$parser$Parser$Advanced$Bad,
-				false,
-				A2($elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
-				$elm$parser$Parser$Advanced$Good,
-				progress,
-				_Utils_Tuple0,
-				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
-		});
-};
-var $elm$parser$Parser$keyword = function (kwd) {
-	return $elm$parser$Parser$Advanced$keyword(
-		A2(
-			$elm$parser$Parser$Advanced$Token,
-			kwd,
-			$elm$parser$Parser$ExpectingKeyword(kwd)));
-};
-var $author$project$Main$typeP = $dmy$elm_pratt_parser$Pratt$expression(
-	{
-		andThenOneOf: _List_fromArray(
-			[
-				A3(
-				$dmy$elm_pratt_parser$Pratt$infixRight,
-				10,
-				$elm$parser$Parser$symbol('→'),
-				$author$project$Main$Fun)
-			]),
-		oneOf: _List_fromArray(
-			[
-				A2(
-				$dmy$elm_pratt_parser$Pratt$constant,
-				$elm$parser$Parser$keyword('Nat'),
-				$author$project$Main$TFree('Nat')),
-				A2(
-				$dmy$elm_pratt_parser$Pratt$constant,
-				$elm$parser$Parser$keyword('Bool'),
-				$author$project$Main$TFree('Bool')),
-				$author$project$Main$brcType
-			]),
-		spaces: $elm$parser$Parser$spaces
-	});
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Set$fromList = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
-};
 var $elm$parser$Parser$ExpectingVariable = {$: 'ExpectingVariable'};
+var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -6843,12 +6666,174 @@ var $elm$parser$Parser$variable = function (i) {
 	return $elm$parser$Parser$Advanced$variable(
 		{expecting: $elm$parser$Parser$ExpectingVariable, inner: i.inner, reserved: i.reserved, start: i.start});
 };
+var $author$project$Main$freeType = $elm$parser$Parser$variable(
+	{inner: $elm$core$Char$isAlphaNum, reserved: $elm$core$Set$empty, start: $elm$core$Char$isUpper});
+var $dmy$elm_pratt_parser$Pratt$Advanced$infixHelp = F4(
+	function (_v0, operator, apply, config) {
+		var leftPrecedence = _v0.a;
+		var rightPrecedence = _v0.b;
+		return _Utils_Tuple2(
+			leftPrecedence,
+			function (left) {
+				return A2(
+					$elm$parser$Parser$Advanced$keeper,
+					A2(
+						$elm$parser$Parser$Advanced$ignorer,
+						$elm$parser$Parser$Advanced$succeed(
+							apply(left)),
+						operator),
+					A2($dmy$elm_pratt_parser$Pratt$Advanced$subExpression, rightPrecedence, config));
+			});
+	});
+var $dmy$elm_pratt_parser$Pratt$Advanced$infixRight = function (precedence) {
+	return $dmy$elm_pratt_parser$Pratt$Advanced$infixHelp(
+		_Utils_Tuple2(precedence, precedence - 1));
+};
+var $dmy$elm_pratt_parser$Pratt$infixRight = $dmy$elm_pratt_parser$Pratt$Advanced$infixRight;
+var $dmy$elm_pratt_parser$Pratt$Advanced$literal = $elm$core$Basics$always;
+var $dmy$elm_pratt_parser$Pratt$literal = $dmy$elm_pratt_parser$Pratt$Advanced$literal;
+var $author$project$Main$typeP = $dmy$elm_pratt_parser$Pratt$expression(
+	{
+		andThenOneOf: _List_fromArray(
+			[
+				A3(
+				$dmy$elm_pratt_parser$Pratt$infixRight,
+				10,
+				$elm$parser$Parser$symbol('→'),
+				$author$project$Main$Fun)
+			]),
+		oneOf: _List_fromArray(
+			[
+				$dmy$elm_pratt_parser$Pratt$literal(
+				A2(
+					$elm$parser$Parser$keeper,
+					$elm$parser$Parser$succeed($author$project$Main$TFree),
+					$author$project$Main$freeType)),
+				$author$project$Main$brcType
+			]),
+		spaces: $elm$parser$Parser$spaces
+	});
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
 var $author$project$Main$varP = $elm$parser$Parser$variable(
 	{
 		inner: function (c) {
-			return $elm$core$Char$isAlphaNum(c) || _Utils_eq(
-				c,
-				_Utils_chr('_'));
+			return $elm$core$Char$isAlphaNum(c);
 		},
 		reserved: $elm$core$Set$fromList(
 			_List_fromArray(
@@ -6859,11 +6844,7 @@ var $author$project$Main$contextItemP = A2(
 	$elm$parser$Parser$keeper,
 	A2(
 		$elm$parser$Parser$keeper,
-		$elm$parser$Parser$succeed(
-			F2(
-				function (n, t) {
-					return _Utils_Tuple2(n, t);
-				})),
+		$elm$parser$Parser$succeed($elm$core$Tuple$pair),
 		A2(
 			$elm$parser$Parser$ignorer,
 			A2(
@@ -7123,7 +7104,6 @@ var $elm$parser$Parser$Advanced$backtrackable = function (_v0) {
 };
 var $elm$parser$Parser$backtrackable = $elm$parser$Parser$Advanced$backtrackable;
 var $author$project$Main$brcTerm = function (config) {
-	var _v0 = A2($elm$core$Debug$log, 'bracket term parser', config);
 	return A2(
 		$elm$parser$Parser$keeper,
 		A2(
@@ -7139,8 +7119,45 @@ var $author$project$Main$CondPT = F3(
 	function (a, b, c) {
 		return {$: 'CondPT', a: a, b: b, c: c};
 	});
+var $elm$parser$Parser$ExpectingKeyword = function (a) {
+	return {$: 'ExpectingKeyword', a: a};
+};
+var $elm$parser$Parser$Advanced$keyword = function (_v0) {
+	var kwd = _v0.a;
+	var expecting = _v0.b;
+	var progress = !$elm$core$String$isEmpty(kwd);
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _v1 = A5($elm$parser$Parser$Advanced$isSubString, kwd, s.offset, s.row, s.col, s.src);
+			var newOffset = _v1.a;
+			var newRow = _v1.b;
+			var newCol = _v1.c;
+			return (_Utils_eq(newOffset, -1) || (0 <= A3(
+				$elm$parser$Parser$Advanced$isSubChar,
+				function (c) {
+					return $elm$core$Char$isAlphaNum(c) || _Utils_eq(
+						c,
+						_Utils_chr('_'));
+				},
+				newOffset,
+				s.src))) ? A2(
+				$elm$parser$Parser$Advanced$Bad,
+				false,
+				A2($elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
+				$elm$parser$Parser$Advanced$Good,
+				progress,
+				_Utils_Tuple0,
+				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
+		});
+};
+var $elm$parser$Parser$keyword = function (kwd) {
+	return $elm$parser$Parser$Advanced$keyword(
+		A2(
+			$elm$parser$Parser$Advanced$Token,
+			kwd,
+			$elm$parser$Parser$ExpectingKeyword(kwd)));
+};
 var $author$project$Main$condTerm = function (config) {
-	var _v0 = A2($elm$core$Debug$log, 'condition term parser', config);
 	return A2(
 		$elm$parser$Parser$keeper,
 		A2(
@@ -7176,6 +7193,14 @@ var $author$project$Main$condTerm = function (config) {
 				$elm$parser$Parser$spaces)),
 		A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config));
 };
+var $dmy$elm_pratt_parser$Pratt$Advanced$constant = F3(
+	function (constantParser, e, _v0) {
+		return A2(
+			$elm$parser$Parser$Advanced$map,
+			$elm$core$Basics$always(e),
+			constantParser);
+	});
+var $dmy$elm_pratt_parser$Pratt$constant = $dmy$elm_pratt_parser$Pratt$Advanced$constant;
 var $dmy$elm_pratt_parser$Pratt$Advanced$infixLeft = function (precedence) {
 	return $dmy$elm_pratt_parser$Pratt$Advanced$infixHelp(
 		_Utils_Tuple2(precedence, precedence));
@@ -7348,7 +7373,6 @@ var $author$project$Main$LamPT = F3(
 		return {$: 'LamPT', a: a, b: b, c: c};
 	});
 var $author$project$Main$lamTerm = function (config) {
-	var _v0 = A2($elm$core$Debug$log, 'lambda term parser', config);
 	return A2(
 		$elm$parser$Parser$keeper,
 		A2(
@@ -7378,8 +7402,6 @@ var $author$project$Main$lamTerm = function (config) {
 				$elm$parser$Parser$spaces)),
 		A2($dmy$elm_pratt_parser$Pratt$subExpression, 1, config));
 };
-var $dmy$elm_pratt_parser$Pratt$Advanced$literal = $elm$core$Basics$always;
-var $dmy$elm_pratt_parser$Pratt$literal = $dmy$elm_pratt_parser$Pratt$Advanced$literal;
 var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 	{
 		andThenOneOf: _List_fromArray(
@@ -7416,35 +7438,32 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 			]),
 		spaces: $elm$parser$Parser$spaces
 	});
-var $author$project$Main$contextProgramP = function () {
-	var tp = A2($elm$core$Debug$log, 'parsing', $author$project$Main$termP);
-	return A2(
+var $author$project$Main$contextProgramP = A2(
+	$elm$parser$Parser$keeper,
+	A2(
 		$elm$parser$Parser$keeper,
 		A2(
 			$elm$parser$Parser$keeper,
-			A2(
-				$elm$parser$Parser$keeper,
-				$elm$parser$Parser$succeed(
-					F3(
-						function (c, te, ty) {
-							return _Utils_Tuple3(c, te, ty);
-						})),
-				A2(
-					$elm$parser$Parser$ignorer,
-					A2(
-						$elm$parser$Parser$ignorer,
-						A2($elm$parser$Parser$ignorer, $author$project$Main$contextP, $elm$parser$Parser$spaces),
-						$elm$parser$Parser$symbol('⊢')),
-					$elm$parser$Parser$spaces)),
+			$elm$parser$Parser$succeed(
+				F3(
+					function (c, te, ty) {
+						return _Utils_Tuple3(c, te, ty);
+					})),
 			A2(
 				$elm$parser$Parser$ignorer,
 				A2(
 					$elm$parser$Parser$ignorer,
-					A2($elm$parser$Parser$ignorer, tp, $elm$parser$Parser$spaces),
-					$elm$parser$Parser$symbol(':')),
+					A2($elm$parser$Parser$ignorer, $author$project$Main$contextP, $elm$parser$Parser$spaces),
+					$elm$parser$Parser$symbol('⊢')),
 				$elm$parser$Parser$spaces)),
-		A2($elm$parser$Parser$ignorer, $author$project$Main$typeP, $elm$parser$Parser$end));
-}();
+		A2(
+			$elm$parser$Parser$ignorer,
+			A2(
+				$elm$parser$Parser$ignorer,
+				A2($elm$parser$Parser$ignorer, $author$project$Main$termP, $elm$parser$Parser$spaces),
+				$elm$parser$Parser$symbol(':')),
+			$elm$parser$Parser$spaces)),
+	A2($elm$parser$Parser$ignorer, $author$project$Main$typeP, $elm$parser$Parser$end));
 var $author$project$Main$noncontextProgramP = A2(
 	$elm$parser$Parser$keeper,
 	A2(
@@ -7588,7 +7607,7 @@ var $author$project$Main$transformTIter = F5(
 						0,
 						_Utils_Tuple3(
 							_List_Nil,
-							$author$project$Main$Int(404),
+							$author$project$Main$Nat(404),
 							_List_Nil)),
 					r));
 		};
@@ -7751,7 +7770,7 @@ var $author$project$Main$transformTIter = F5(
 						nextAppIndex,
 						_Utils_Tuple3(
 							scopeVars,
-							$author$project$Main$Int(val),
+							$author$project$Main$Nat(val),
 							allVars)));
 			default:
 				var val = pt.a;
@@ -7949,17 +7968,38 @@ var $author$project$Main$update = F2(
 					};
 				};
 				var newSteps = function (r) {
+					var steps = A3(
+						$author$project$Main$expandStepped,
+						firstStep(r).tree,
+						_List_Nil,
+						_List_Nil);
+					var laststep = function () {
+						var _v4 = A2(
+							$elm$core$List$take,
+							1,
+							$elm$core$List$reverse(steps));
+						if (!_v4.b) {
+							return _List_Nil;
+						} else {
+							var step = _v4.a;
+							var newTree = A2($author$project$Main$typeSub, step.tree, step.subs);
+							return _Utils_eq(newTree, step.tree) ? _List_Nil : _List_fromArray(
+								[
+									_Utils_update(
+									step,
+									{subs: _List_Nil, tree: newTree})
+								]);
+						}
+					}();
 					return A2(
 						$elm$core$Debug$log,
 						'steps',
-						A2(
-							$elm$core$List$cons,
-							firstStep(r),
-							A3(
-								$author$project$Main$expandStepped,
-								firstStep(r).tree,
-								_List_Nil,
-								_List_Nil)));
+						_Utils_ap(
+							A2(
+								$elm$core$List$cons,
+								firstStep(r),
+								steps),
+							laststep));
 				};
 				if (processedInput.$ === 'Ok') {
 					var _v3 = processedInput.a;
@@ -7989,7 +8029,6 @@ var $author$project$Main$update = F2(
 				}
 			case 'SetShortContext':
 				var b = msg.a;
-				var _v4 = A2($elm$core$Debug$log, 'substitute context: ', b);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -7997,7 +8036,6 @@ var $author$project$Main$update = F2(
 					$author$project$Main$reformat(_Utils_Tuple0));
 			default:
 				var b = msg.a;
-				var _v5 = A2($elm$core$Debug$log, 'display rules: ', b);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -8046,10 +8084,17 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 	});
 var $elm$html$Html$Attributes$checked = $elm$html$Html$Attributes$boolProperty('checked');
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$html$Html$Attributes$cols = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'cols',
+		$elm$core$String$fromInt(n));
+};
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$form = _VirtualDom_node('form');
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -8124,7 +8169,15 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$Attributes$readonly = $elm$html$Html$Attributes$boolProperty('readOnly');
+var $elm$html$Html$Attributes$rows = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'rows',
+		$elm$core$String$fromInt(n));
+};
 var $author$project$Main$atIndex = F2(
 	function (a, l) {
 		var li = A2(
@@ -8135,10 +8188,6 @@ var $author$project$Main$atIndex = F2(
 				}),
 			l);
 		return A2($author$project$Main$lookUp, a, li);
-	});
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
 	});
 var $author$project$Main$showContext = F4(
 	function (isLatex, c, v, cs) {
@@ -8198,10 +8247,7 @@ var $author$project$Main$showContext = F4(
 					while (true) {
 						var _v5 = A2($author$project$Main$getIndex, context, subs);
 						if (_v5.$ === 'Nothing') {
-							var _v6 = A2(
-								$elm$core$Debug$log,
-								'shifted into',
-								A2(shiftR, context, out));
+							var _v6 = A2(shiftR, context, out);
 							var l = _v6.a;
 							var r = _v6.b;
 							if (_Utils_eq(l, _List_Nil)) {
@@ -11322,7 +11368,7 @@ var $author$project$Main$showTerm = F3(
 				var t1 = t.b;
 				var t2 = t.c;
 				return 'if ' + (A3($author$project$Main$showTerm, isLatex, c, v) + (' then ' + (A3($author$project$Main$showTerm, isLatex, t1, v) + (' else ' + A3($author$project$Main$showTerm, isLatex, t2, v)))));
-			case 'Int':
+			case 'Nat':
 				var n = t.a;
 				return $elm$core$String$fromInt(n);
 			default:
@@ -11579,7 +11625,10 @@ var $author$project$Main$showTree_Next = F5(
 													childrenFold(children)));
 										case 'TypeErr':
 											var str = _v4.a;
-											return _List_fromArray(
+											return isLatex ? _List_fromArray(
+												[
+													$elm$html$Html$text('\\text{' + (str + '}'))
+												]) : _List_fromArray(
 												[
 													A2(
 													$elm$html$Html$span,
@@ -11706,8 +11755,6 @@ var $author$project$Main$showTypeVars = function (vars) {
 			vars));
 };
 var $elm$html$Html$Attributes$spellcheck = $elm$html$Html$Attributes$boolProperty('spellcheck');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$html$Html$Attributes$target = $elm$html$Html$Attributes$stringProperty('target');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
@@ -11830,46 +11877,45 @@ var $author$project$Main$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$text('Requires packages: amsmath, '),
 										A2(
-										$elm$html$Html$a,
+										$elm$html$Html$div,
+										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$Attributes$href('https://research.nii.ac.jp/~tatsuta/proof-sty.html'),
-												$elm$html$Html$Attributes$target('_blank')
+												$elm$html$Html$text('Requires packages: amsmath, '),
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('https://research.nii.ac.jp/~tatsuta/proof-sty.html'),
+														$elm$html$Html$Attributes$target('_blank')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('proof')
+													])),
+												$elm$html$Html$text('. Use this command:')
+											])),
+										A2(
+										$elm$html$Html$textarea,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('latex'),
+												$elm$html$Html$Attributes$rows(1),
+												$elm$html$Html$Attributes$readonly(true),
+												$elm$html$Html$Attributes$cols(100)
 											]),
 										_List_fromArray(
 											[
-												$elm$html$Html$text('proof')
+												$elm$html$Html$text('\\usepackage{proof,amsmath}')
 											])),
-										$elm$html$Html$text('. Use this command:')
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('latex'),
-										A2($elm$html$Html$Attributes$style, 'height', '1.2em')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text('\\usepackage{proof,amsmath}')
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Current step in latex format:')
-									])),
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('latex')
-									]),
-								_List_fromArray(
-									[
+										A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Current step in latex format:')
+											])),
 										A2(
 										$elm$html$Html$div,
 										_List_fromArray(
@@ -11889,7 +11935,132 @@ var $author$project$Main$view = function (model) {
 													_Utils_Tuple2(_List_Nil, 0)) : $elm$core$Maybe$Nothing),
 												A2($elm$html$Html$br, _List_Nil, _List_Nil),
 												$elm$html$Html$text('$$')
-											]))
+											])),
+										A2(
+										$elm$html$Html$textarea,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('latex'),
+												$elm$html$Html$Attributes$id('latex_tree'),
+												$elm$html$Html$Attributes$readonly(true),
+												$elm$html$Html$Attributes$cols(100)
+											]),
+										_List_Nil)
+									]))
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('help_overlay')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('overlay_background')
+							]),
+						_List_Nil),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('overlay_window')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$h1,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('How to use')
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$h2,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('What is this?')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\r\n                              Visualization tool for simply typed λ\r\n                              calculus type derivation trees.\r\n                              ')
+											])),
+										A2(
+										$elm$html$Html$h2,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Why?')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\r\n                              Because \"LAMBDA: Leading Advancements in Molecular\r\n                              Biochemistry and Dimensional Astrophysics.\" - Black Mesa\r\n                              ')
+											])),
+										A2(
+										$elm$html$Html$h2,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('How?')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Enter your λ calculus program into the input field.')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Shortcuts:'),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												$elm$html$Html$text('\\l : λ'),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												$elm$html$Html$text('-> : →'),
+												A2($elm$html$Html$br, _List_Nil, _List_Nil),
+												$elm$html$Html$text('|- : ⊢')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\r\n                              Then you can proceed to the type derivation tree section\r\n                              where you can walk trough the construction of the tree.\r\n                              You can export the shown tree to LaTeX from here as well.\r\n                              ')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\r\n                              On the bottom part of the page there are sections for any\r\n                              created type variables and context substitutions for the\r\n                              currently selected step of the derivation tree.\r\n                              ')
+											])),
+										A2(
+										$elm$html$Html$h2,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Syntax')
+											])),
+										A2($elm$html$Html$p, _List_Nil, _List_Nil)
 									]))
 							]))
 					])),
@@ -11939,6 +12110,19 @@ var $author$project$Main$view = function (model) {
 									[
 										$elm$html$Html$text('CALCULUS TypeChecker')
 									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$id('help_button')
+									]),
+								_List_Nil)
 							]))
 					])),
 				A2(

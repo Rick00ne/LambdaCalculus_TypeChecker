@@ -12,17 +12,19 @@
   		padding: 0;
   	}
   	.page {
+      position: relative;
   		height: 100vh;
   		min-width: fit-content;
   		display: flex;
   		flex-direction: column;
   		font-family: monospace;
+      font-size: 30px;
   	}
   	.page ::-webkit-scrollbar{
   		width: 15px;
   		height: 15px;
   	}
-  	#report_overlay, #export_overlay {
+  	#report_overlay, #export_overlay, #help_overlay, #unindented {
 	  	display: none;
   	}
   	.overlay_background {
@@ -33,27 +35,54 @@
   		left:0;
   		background-color: rgba(0,0,0,0.9);
   	}
-  	/*#report_overlay .overlay_window, #export_overlay*/ .overlay_window {
-	    background: aqua;
-	    width: max-content;
-	    padding: 1em;
-  	}
     .overlay_window {
-      position: fixed;
+      border: solid darkorange 2px;
+      border-radius: 5px; 
+      display: flex;
+      flex-direction: column;
+      background: rgba(55,55,55,1);
+      width: max-content;
+      max-width: 75%;
+      max-height: 75%;
+      padding: 1em;
+      position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%,-50%);
+      box-shadow: inset black 0 0 1em;
+    }
+    .overlay_window h1 {
+      color: darkorange;
+      margin-top: 0;
+    }
+    .overlay_window > div {
+      padding: 0.5em;
+      overflow-y: auto;
+      border: solid 2px black;
+      background: darkgray;
+      box-shadow: inset black 0 0 1em;
+    }
+    .overlay_window> div::-webkit-scrollbar-track {
+      background: gray;
+      box-shadow: inset black 0 0 10px;
+    }
+    .overlay_window> div::-webkit-scrollbar-thumb {
+      background: black;
     }
     .latex{
-      user-select: all;
-      overflow-y: scroll;
+      resize: none;
+      font-size: inherit;
+      text-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
       margin: 0 auto;
       border: inset black 2px;
-      height: 250pt;
       padding: 5pt;
       background: white;
-      width: 50vw;
-      min-width: 1000px;
+      width: 90%;
+    }
+    .latex::-webkit-scrollbar-thumb {
+      background: black;
     }
   	.header {
   		font-family: Arial;
@@ -82,6 +111,17 @@
   		background-color: darkorange;
   		border-color: orange;
   	}
+    #help_button {
+      background: orange url(help.svg);
+      background-size: 30px;
+      width: 34px;
+      height: 34px;
+      border: solid 2px darkorange;
+    }
+    #help_button:hover {
+      background-color: darkorange;
+      border-color: orange;
+    }
   	.title {
   		width: max-content;
   		margin: auto;
@@ -112,12 +152,11 @@
   		box-shadow: inset black 0 0 50pt;
   		background: rgba(55,55,55,1);
   		flex: 1;
-  		font-size: 30px;
   		padding: 10pt;
   	}
   	.program_input {
   		min-width: max-content;
-  		width: 80vW;
+  		width: 80%;
   		margin: auto;
   		padding: 10pt;
   		display: flex;
@@ -466,8 +505,9 @@
 	  var plusButton = document.getElementById("zoom_plus");
 	  var reportOverlay = document.getElementById("report_overlay");
     var exportOverlay = document.getElementById("export_overlay");
+    var helpOverlay = document.getElementById("help_overlay");
     var unindented = document.getElementById("unindented");
-    var formated = document.createElement("div");
+    var latexTree = document.getElementById("latex_tree");
 
     app.ports.reformat.subscribe(function(){
       requestAnimationFrame(() => {
@@ -476,10 +516,8 @@
     });
 
     function reformat(){
-      console.log("REFORMATTING!!!")
-
-      var lines = unindented.innerHTML.split("<br>");
-      console.log(lines);
+      const regex = /<[/]*span>/g;
+      var lines = unindented.innerHTML.replace(regex,"").split("<br>");
       var i = 0;
       var len = lines.length;
       var indent = 0;
@@ -487,38 +525,36 @@
       while (i<len){
         var line = lines[i];
         if (line.startsWith('}')){
-          lines[i]=("&nbsp;".repeat(indent-1))+lines[i];
+          lines[i]=(" ".repeat(indent-1))+lines[i];
           indent-=3;
         }
         else if (line.startsWith('&amp')){
-          console.log(line);
-          lines[i]=("&nbsp;".repeat(indent-1))+lines[i];
+          lines[i]=(" ".repeat(indent-1))+lines[i];
         }
         else{
-          lines[i]=("&nbsp;".repeat(indent))+lines[i];
+          lines[i]=(" ".repeat(indent))+lines[i];
           if (arePremisses){
             arePremisses = false;
             indent++;
           }
           if (line.includes("\\infer")){
-            console.log("indenting...")
             indent += 2;
             i++;
-            lines[i]=("&nbsp;".repeat(indent))+lines[i];
+            lines[i]=(" ".repeat(indent))+lines[i];
             arePremisses = true;
           }
         }
         i++;
       }
-      formated.innerHTML=lines.join("<br>");
-      unindented.insertAdjacentElement("afterend",formated);
-      unindented.style.display="none";
+      latexTree.value = lines.join("\n");
+      latexTree.rows = lines.length;
     }
 
 	  plusButton.onclick = zoomIn;
 	  minusButton.onclick = zoomOut;
 	  document.getElementById("report_button").onclick = reportOverlayOn;
     document.getElementById("export_button").onclick = exportOverlayOn;
+    document.getElementById("help_button").onclick = helpOverlayOn;
     const elems = document.getElementsByClassName("overlay_background");
     for (let i = 0; i < elems.length; i++) {
       elems[i].onclick = function()
@@ -568,6 +604,14 @@
 
     function exportOverlayOff(){
       exportOverlay.style.display = "none";
+    }
+
+    function helpOverlayOn(){
+      helpOverlay.style.display = "block";
+    }
+
+    function helpOverlayOff(){
+      helpOverlay.style.display = "none";
     }
   </script>
   <script src="validate.min.js"></script>
