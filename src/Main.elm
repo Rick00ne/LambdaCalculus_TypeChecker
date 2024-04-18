@@ -2,7 +2,7 @@ port module Main exposing (..)
 
 
 import Browser
-import Html exposing (Html, button, div, text, table, tr, td, textarea, span, input, label, form, h1, h2, a, br, p)
+import Html exposing (Html, button, div, text, table, tr, td, textarea, span, input, label, form, h1, h2, a, br, p, ol, li)
 import Html.Events exposing (onClick, onInput, onCheck)
 import Html.Attributes exposing (id, colspan, rowspan, style, placeholder, value, size, disabled, class, spellcheck, type_, checked, method, name, action, href, target, readonly, rows, cols)
 import List exposing (filter, intersperse, length, head, tail,  map, member, all, foldl, reverse, concat, take, drop)
@@ -56,7 +56,7 @@ type Children
   = Node (List Tree)
   | Leaf
   | LeafC Int Type Context
-  | TypeErr String
+  | TypeErr (List ErrPart)
 
 type Type
   = TFree String
@@ -65,7 +65,10 @@ type Type
 
 type Info
   = HasType Type
---  | SuppotedType 
+
+type ErrPart
+  = String String
+  | Type Type
 
 type alias Context = List (Int, Info)
 
@@ -77,6 +80,9 @@ type Term
   | Cond Term Term Term
   | Nat Int
   | Bool Bool
+  | IsZero Term
+  | Succ Term
+  | Pred Term
 
 type alias Step = {tree: Tree, subs: List (Int,Type), conSubs: List (Int,Context)}
 
@@ -123,11 +129,23 @@ makeAssumptions (c,t) =
         Nat _->
           if ty==(TFree "Nat")
             then (Leaf,[],"NAT")
-            else (TypeErr ("Found 'Int' constant but expected type '"++showType False ty++"'"),[],"NAT Err")
+            else (TypeErr [String"Found 'Nat' constant but expected type '",Type ty,String"'"],[],"NAT Err")
         Bool _->
           if ty==(TFree "Bool")
             then (Leaf,[],"BOOL")
-            else (TypeErr ("Found 'Bool' constant but expected type '"++showType False ty++"'"),[],"BOOL Err")
+            else (TypeErr [String"Found 'Bool' constant but expected type '",Type ty,String"'"],[],"BOOL Err")
+        IsZero t1 ->
+          if ty==(TFree "Bool")
+            then (Node [Tree {parent=(c,Ann t1 (TFree "Nat")),children=(Node []),ruleName=""}],[],"ISZERO")
+            else (TypeErr [String"Found 'Nat' expression (iszero ...) but expected type '",Type ty,String"'"],[],"ISZERO Err")
+        Succ t1 ->
+          if ty==(TFree "Nat")
+            then (Node [Tree {parent=(c,Ann t1 (TFree "Nat")),children=(Node []),ruleName=""}],[],"SUCC")
+            else (TypeErr [String"Found 'Nat' expression (succ ...) but expected type '",Type ty,String"'"],[],"SUCC Err")
+        Pred t1 ->
+          if ty==(TFree "Nat")
+            then (Node [Tree {parent=(c,Ann t1 (TFree "Nat")),children=(Node []),ruleName=""}],[],"PRED")
+            else (TypeErr [String"Found 'Nat' expression (pred ...) but expected type '",Type ty,String"'"],[],"PRED Err")
         Var n  ->
           case (lookUp n c) of
             Just temp ->
@@ -137,8 +155,8 @@ makeAssumptions (c,t) =
               in
               if good 
                 then ((LeafC n ty c),subs,"VAR")
-                else (TypeErr ("Found '"++showType False found++"' but expected type '"++showType False ty++"'"),subs,"VAR Err")
-            Nothing -> (TypeErr "Variable is NOT in the context",[],"VAR Err")
+                else (TypeErr [String"Found '",Type found,String"' but expected type '",Type ty,String"'"],[],"VAR Err")
+            Nothing -> (TypeErr [String "Variable is NOT in the context"],[],"VAR Err")
         Cond cond b1 b2 ->
            ((Node
             [Tree {parent=(c,Ann cond (TFree "Bool")),children=(Node []),ruleName=""}
@@ -155,14 +173,14 @@ makeAssumptions (c,t) =
                 then ((Node
                   [Tree {parent=(c++[(n,HasType varTy)],Ann t1 ty2),children=(Node []),ruleName=""}]),subs,"ABS")
                 else
-                  (TypeErr "Lambda parameter and lambda type mismatch",subs,"ABS Err")
+                  (TypeErr [String "Lambda parameter and lambda type mismatch"],[],"ABS Err")
             _ ->
-              (TypeErr ("Expected nonfunctional type '"++showType False ty++"' but found functional type (lambda abstraction)"),[],"ABS Err")
+              (TypeErr ([String "Expected nonfunctional type '",Type ty,String "' but found functional type (lambda abstraction)"]),[],"ABS Err")
         _ ->
-          (TypeErr "No rule found",[],"Err")
+          (TypeErr [String "No rule found"],[],"Err")
         
     _ ->
-      (TypeErr "The term needs to be an annotation",[],"Err")
+      (TypeErr [String "The term needs to be an annotation"],[],"Err")
 
 expandStepped : Tree -> List (Int,Type) -> List(Int,Context) -> List Step
 expandStepped (Tree tree) passedTypeVars passedConSubs=
@@ -179,8 +197,8 @@ expandStepped (Tree tree) passedTypeVars passedConSubs=
 
   in
   case assums of
-    TypeErr str ->
-      [{tree= Tree {parent=tree.parent , children=TypeErr str, ruleName=rule}, subs= allTypeVars,conSubs=passedConSubs}]
+    TypeErr err ->
+      [{tree= Tree {parent=tree.parent , children=TypeErr err, ruleName=rule}, subs= allTypeVars,conSubs=passedConSubs}]
     (Node list) ->
       let
         gradualEx = foldl                     --making sure every child knows about it's left (sooner stepped trough) sibling's type vars and context subs
@@ -199,7 +217,7 @@ expandStepped (Tree tree) passedTypeVars passedConSubs=
             case reverse steps of
               [] ->
                 Tree  { parent=([],Nat (-1))
-                      , children=TypeErr "Internal Error! (please report this to feedback, if you get this error)"
+                      , children=TypeErr [String "Internal Error! (please report this to feedback, if you get this error)"]
                       , ruleName=""}
               last::_ ->
                 last.tree
@@ -418,19 +436,42 @@ view model =
           , div [ class "overlay_window"]
                 [ h1    []
                         [ text "Report a bug"]
-                , form  [ id "report_form"
-                        , method "POST"
-                        , action "report-form.php"
-                        ]
-                        [ label []
-                                [ text "Description:"
-                                , input [name "message"][]
-                                ]
-                        , input [ type_ "submit"
-                                , value "send"
-                                ]
-                                []
-                        ]
+                , div []
+                      [ form  [ id "report_form"
+                              , method "POST"
+                              , action "report-form.php"
+                              ]
+                              [ p     []
+                                      [ text
+                                          """
+                                          If you have encountered a bug, please fill out this form.
+                                          """
+                                      , br [][]
+                                      , text
+                                          """
+                                          Proper bug report should describe the unwanted behaviour,
+                                          but also the steps taken to produce it.
+                                          """
+                                      , br [][]
+                                      , text
+                                          """
+                                          In some cases it also helps,
+                                          if you tell us what internet browser you used while the bug occured.
+                                          """
+                                      ]
+                              , label [][ text "Description:"]
+                              , textarea
+                                      [ name "message"
+                                      , placeholder "Describe the problem here."
+                                      , rows 5, cols 100
+                                      ]
+                                      []
+                              , input [ type_ "submit"
+                                      , value "send"
+                                      ]
+                                      []
+                              ]
+                      ]
                 ]
           ]
       , div
@@ -486,8 +527,10 @@ view model =
                     , p   []
                           [ text 
                               """
-                              Visualization tool for simply typed λ
-                              calculus type derivation trees.
+                              This is a visualization tool for simply typed λ-calculus type
+                              derivation trees. This tool performs typechecking on the entered
+                              program code, while showing you the process in a form of building a
+                              type derivation tree.
                               """
                           ]
                     , h2  []
@@ -499,10 +542,18 @@ view model =
                               Biochemistry and Dimensional Astrophysics.\" - Black Mesa
                               """
                           ]
+                    , p   []
+                          [ text
+                              """
+                              On a serious note, the main goal of this tool is to help shed some
+                              light at the fundamentals of typechecking in functional programming,
+                              and also help out people studying it.
+                              """
+                          ]
                     , h2  []
                           [ text "How?" ]
                     , p   []
-                          [ text "Enter your λ calculus program into the input field."]
+                          [ text "Enter your λ-calculus program into the input field."]
                     , p   []
                           [ text "Shortcuts:"
                           , br [][]
@@ -531,7 +582,155 @@ view model =
                     , h2  []
                           [ text "Syntax"]
                     , p   []
-                          []
+                          [ text "The input has to be written in one of the two ways:" ]
+                    , ol  [ style "list-style-position" "inside" ]
+                          [ li [][ text "<context> ⊢ <term> : <type>" ]
+                          , li [][ text "<term> : <type>" ]
+                          ]
+                    , p   []
+                          [ text 
+                              """
+                              The second option is for cases when you dont have any context,
+                              so you can ommit the '⊢'.
+                              """
+                          ]
+                    , p   []
+                          [ text
+                              """
+                              The context is denoted as type declarations of variables separated
+                              by a comma. The individual declarations are denoted by the
+                              variable's name, a colon, and then the type of the variable.
+                              """
+                          ]
+                    , p   []
+                          [ text "<context> := <variable>:<type>, <variable>:<type>, ..." ]
+                    , p   []
+                          [ text
+                              """
+                              Variables' names MUST start with a lowercase letter. On the other
+                              hand, types' names MUST start with an uppercase letter. Both names
+                              can include numbers as well.
+                              """
+                          ]
+                    , p   []
+                          [ text
+                              """
+                              There are also function types, used for denoting... you guessed it...
+                              functions. Bellow is the general way to denote them.
+                              """
+                          ]
+                    , p   []
+                          [ text "<type> → <type>" ]
+                    , p   []
+                          [ text "You can string these together like this, too:" ]
+                    , p   []
+                          [ text "String → Nat → Bool → String" ]
+                    , p   []
+                          [ text
+                              """
+                              You can use brackets to enforce priority. The default priority
+                              of the type listed above looks like this:
+                              """
+                          ]
+                    , p   []
+                          [ text "String → (Nat → (Bool → String))" ]
+                    , p   []
+                          [ text
+                              """
+                              Let's get to the last piece of the puzzle, the term. There are
+                              multiple options when it comes to terms, the most basic of which are
+                              predefined constants and variables. This tool only recognizes constants
+                              in type 'Bool' (true, false) and 'Nat' (numbers from 0 and up).
+                              If you want to use a variable in your program, then you need
+                              to include the variable in context, for the input to be considered
+                              valid.
+                              """
+                          ]
+                    , p   []
+                          [ text
+                              """
+                              Next term option is application of terms, which is denoted just
+                              by writing two terms next to each other. This is how you feed arguments
+                              into functions. Bellow is an example of a program consisting
+                              of the application 'fun 3'. It is also an example for
+                              a variable term - 'fun', and a constant term - '3'. You can also
+                              see there, that the variable 'fun' is denoted in the context,
+                              so it can be used in the term of the program.
+                              """
+                          ]
+                    , p   []
+                          [ text "fun : Nat → Bool ⊢ fun 3 : Bool" ]
+                    , p   []
+                          [ text
+                              """
+                              There is a group of keywords that act almost like functions. These are:
+                              'iszero', 'succ' and 'pred'. Unlike with functions, after these keywords
+                              you MUST provide an associated term.
+                              """
+                          ]
+                    , p   []
+                          [ text "iszero 0 : Bool"
+                          , br [][]
+                          , text "succ 5 : Nat"
+                          , br [][]
+                          , text "pred 8 : Nat"
+                          ]
+                    , p   []
+                          [ text
+                              """
+                              Yet another form of a term is a conditional term. These terms
+                              consist of three another terms and generally look like this:
+                              """
+                          ]
+                    , p   []
+                          [ text "if <term> then <term> else <term>" ]
+                    , p   []
+                          [ text
+                              """
+                              And last but not least there are abstractions, which are essentially
+                              what we call an anonymous function. To write one, we start with
+                              the 'λ' and then we denote a name and a type for the function argument
+                              separated by a colon. Next we type a dot, after which we start
+                              denoting the term that makes the body of our function. To create
+                              a multi-argument function we can put one abstraction into another.
+                              Important thing to note is, that the argument name you choose
+                              for your abstraction MUST NOT be included in the context of your program.
+                              Bellow is an example of a program with multi-argument abstraction.
+                              """
+                          ]
+                    , p   []
+                          [ text "λb:Bool.λx:Nat.if b then succ x else pred x : Bool->Nat->Nat" ]
+                    , p   []
+                          [ text
+                              """
+                              Abstractions, conditional terms, and the keywords 'iszero', 'succ' and
+                              'pred' take everything that they can reach as a part of them. This means
+                              that they normaly swallow up any subsequent applications, so writing this:
+                              """
+                          ]
+                    , p   []
+                          [ text "... ⊢ fun succ 0 0 : ..." ]
+                    , p   []
+                          [ text "... is the same as writing this:" ]
+                    , p   []
+                          [ text "... ⊢ fun (succ 0 0) : ..." ]
+                    , p   []
+                          [ text 
+                              """
+                              To combat this behaviour we can encapsulate these terms in brackets
+                              together with only the parts we want them to swallow up:
+                              """
+                          ]
+                    , p   []
+                          [ text "... ⊢ fun (succ 0) 0 : ..." ]
+                    , p   []
+                          [ text
+                              """
+                              And that's it, now you can go and experiment to your heart's content.
+                              """
+                          , br [][]
+                          , text "Happy typechecking!"
+                          ]
                     ]
                 ]
           ]
@@ -745,7 +944,15 @@ showTree_Next isLatex (Tree t) vars displayRules contextSubs =
                           (if isLatex then \(x,_)-> x else \(x,_)->td [] [x])
                           (childrenFold children)
                         )
-                    TypeErr str ->
+                    TypeErr err ->
+                      let
+                        mapper =
+                            (\part->case part of
+                              String partS -> partS
+                              Type partT -> showType isLatex partT
+                            )
+                        str = String.concat (map mapper err)
+                      in
                       if isLatex then
                         [text ("\\text{"++str++"}")]
                       else
@@ -800,10 +1007,12 @@ toLatex rule children =
               [ text "LaTeX conversion error" ]
         )
 
-
-
 showTerm : Bool -> Term -> List String -> String
 showTerm isLatex t v =
+  showTerm_internal False isLatex t v
+
+showTerm_internal: Bool -> Bool -> Term -> List String -> String
+showTerm_internal noHangs isLatex t v =
   let
     priority term =
       case term of
@@ -816,6 +1025,9 @@ showTerm isLatex t v =
       case term of
         Lam _ _ _ ->True
         Cond _ _ _->True
+        IsZero _  ->True
+        Succ _    ->True
+        Pred _    ->True
         _ -> False
   in
   case t of
@@ -836,16 +1048,22 @@ showTerm isLatex t v =
         then
           "("++(showTerm isLatex t1 v)++")"
         else
-          (showTerm isLatex t1 v)
+          (showTerm_internal True isLatex t1 v)
       )
       ++
       (
-        if priority t2 >= 2
+        if (priority t2 >= 2 ||  (isOpenEnded t2 && noHangs))
         then
           " ("++(showTerm isLatex t2 v)++")"
         else
           " "++(showTerm isLatex t2 v)
       )
+    IsZero term ->
+      "iszero "++(showTerm isLatex term v)
+    Succ term ->
+      "succ "++(showTerm isLatex term v)
+    Pred term ->
+      "pred "++(showTerm isLatex term v)
     Cond c t1 t2 ->
       "if "++showTerm isLatex c v++" then "++showTerm isLatex t1 v++" else "++showTerm isLatex t2 v
     Nat n -> fromInt n
@@ -990,6 +1208,9 @@ type ParsedTerm
   | CondPT  ParsedTerm ParsedTerm ParsedTerm
   | IntPT Int
   | BoolPT Bool
+  | IsZeroPT ParsedTerm
+  | SuccPT ParsedTerm
+  | PredPT ParsedTerm
 
 programP : Parser (ParsedContext,ParsedTerm,Type)
 programP = 
@@ -1047,7 +1268,7 @@ varP =
   Parser.variable
     { start = Char.isLower
     , inner = \c -> Char.isAlphaNum c
-    , reserved = Set.fromList ["λ","if","then","else","true","false"]
+    , reserved = Set.fromList ["λ","if","then","else","true","false","iszero","succ","pred"]
     }
 
 typeP : Parser Type
@@ -1079,7 +1300,10 @@ termP : Parser ParsedTerm
 termP =
   Pratt.expression
     { oneOf =
-      [ condTerm 
+      [ condTerm
+      , iszeroTerm
+      , succTerm
+      , predTerm
       , Pratt.constant (Parser.keyword "true") (BoolPT True)
       , Pratt.constant (Parser.keyword "false") (BoolPT False)
       , Pratt.literal (Parser.succeed VarPT |= varP)
@@ -1098,6 +1322,27 @@ brcTerm config =
     |. Parser.symbol "("
     |= Pratt.subExpression 0 config
     |. Parser.symbol ")"
+
+iszeroTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
+iszeroTerm config =
+  Parser.succeed IsZeroPT
+    |. Parser.keyword "iszero"
+    |. Parser.spaces
+    |= Pratt.subExpression 3 config
+
+succTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
+succTerm config =
+  Parser.succeed SuccPT
+    |. Parser.keyword "succ"
+    |. Parser.spaces
+    |= Pratt.subExpression 3 config
+
+predTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
+predTerm config =
+  Parser.succeed PredPT
+    |. Parser.keyword "pred"
+    |. Parser.spaces
+    |= Pratt.subExpression 3 config
 
 condTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
 condTerm config =
@@ -1176,6 +1421,33 @@ transformTIter pt allVars scopeVars nextVarIndex nextAppIndex =
     find v l = filter (\e -> e>=0) (map (\(i,e) -> if (v==e) then i else -1) l)
   in
   case pt of
+    IsZeroPT term ->
+      let
+        r = transformTIter term allVars scopeVars nextVarIndex nextAppIndex
+      in
+      case r of
+        Result.Ok (nv,na,(sv,t,av))->
+          Result.Ok (nv,na,(sv,IsZero t,av))
+        err ->
+          err
+    SuccPT term ->
+      let
+        r = transformTIter term allVars scopeVars nextVarIndex nextAppIndex
+      in
+      case r of
+        Result.Ok (nv,na,(sv,t,av))->
+          Result.Ok (nv,na,(sv,Succ t,av))
+        err ->
+          err
+    PredPT term ->
+      let
+        r = transformTIter term allVars scopeVars nextVarIndex nextAppIndex
+      in
+      case r of
+        Result.Ok (nv,na,(sv,t,av))->
+          Result.Ok (nv,na,(sv,Pred t,av))
+        err ->
+          err
     VarPT str ->
       let
         found = find str scopeVars
