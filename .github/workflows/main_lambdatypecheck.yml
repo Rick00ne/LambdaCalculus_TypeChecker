@@ -63,4 +63,4 @@ jobs:
           app-name: 'lambdatypecheck'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2A8D964A76B3405DA468086C521F8CAF }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8B902015252B4372ADE0871A3491DD33 }}
