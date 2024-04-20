@@ -255,7 +255,7 @@ expandStepped (Tree tree) passedTypeVars passedConSubs=
       in
       baseStep::laterSteps
     someLeaf ->
-      [{tree= Tree {parent=tree.parent, children=someLeaf, ruleName=rule}, subs= allTypeVars, conSubs=passedConSubs}]
+      [{tree= Tree {parent=tree.parent, children=someLeaf, ruleName=rule}, subs= allTypeVars, conSubs=childConSubs}]
 
 typeSub : Tree -> List (Int,Type) -> Tree
 typeSub (Tree t) subs= 

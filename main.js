@@ -6137,7 +6137,7 @@ var $author$project$Main$expandStepped = F3(
 				return _List_fromArray(
 					[
 						{
-						conSubs: passedConSubs,
+						conSubs: childConSubs,
 						subs: allTypeVars,
 						tree: $author$project$Main$Tree(
 							{children: someLeaf, parent: tree.parent, ruleName: rule})
