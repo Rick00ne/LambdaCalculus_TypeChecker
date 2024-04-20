@@ -49,6 +49,7 @@ type alias Model =
   , displayRules: Bool
   , shortContext: Bool
   , contextSubs: List (Int,Context)
+  , showingExamples : Bool
   }
 
 type Tree = Tree {parent: (Context,Term), children: Children, ruleName: String}
@@ -80,9 +81,9 @@ type Term
   | Cond Term Term Term
   | Nat Int
   | Bool Bool
-  | IsZero Term
-  | Succ Term
-  | Pred Term
+  | IsZero
+  | Succ
+  | Pred
 
 type alias Step = {tree: Tree, subs: List (Int,Type), conSubs: List (Int,Context)}
 
@@ -111,6 +112,7 @@ init _ =
     , displayRules = True
     , shortContext = True
     , contextSubs = []
+    , showingExamples = False
     }
   , Cmd.none
   )
@@ -134,18 +136,30 @@ makeAssumptions (c,t) =
           if ty==(TFree "Bool")
             then (Leaf,[],"BOOL")
             else (TypeErr [String"Found 'Bool' constant but expected type '",Type ty,String"'"],[],"BOOL Err")
-        IsZero t1 ->
-          if ty==(TFree "Bool")
-            then (Node [Tree {parent=(c,Ann t1 (TFree "Nat")),children=(Node []),ruleName=""}],[],"ISZERO")
-            else (TypeErr [String"Found 'Nat' expression (iszero ...) but expected type '",Type ty,String"'"],[],"ISZERO Err")
-        Succ t1 ->
-          if ty==(TFree "Nat")
-            then (Node [Tree {parent=(c,Ann t1 (TFree "Nat")),children=(Node []),ruleName=""}],[],"SUCC")
-            else (TypeErr [String"Found 'Nat' expression (succ ...) but expected type '",Type ty,String"'"],[],"SUCC Err")
-        Pred t1 ->
-          if ty==(TFree "Nat")
-            then (Node [Tree {parent=(c,Ann t1 (TFree "Nat")),children=(Node []),ruleName=""}],[],"PRED")
-            else (TypeErr [String"Found 'Nat' expression (pred ...) but expected type '",Type ty,String"'"],[],"PRED Err")
+        IsZero ->
+          let
+            temp = Fun (TFree "Nat")(TFree "Bool")
+            (good,subs)= typeCompare ty temp
+          in
+          if good
+            then (Leaf,subs,"ISZERO")
+            else (TypeErr [String"Found '",Type temp,String"' expression (iszero) but expected type '",Type ty,String"'"],[],"ISZERO Err")
+        Succ ->
+          let
+            temp = Fun (TFree "Nat")(TFree "Nat")
+            (good,subs)= typeCompare ty temp
+          in
+          if good
+            then (Leaf,subs,"SUCC")
+            else (TypeErr [String"Found '",Type temp,String"' expression (succ ...) but expected type '",Type ty,String"'"],[],"SUCC Err")
+        Pred ->
+          let
+            temp = Fun (TFree "Nat")(TFree "Nat")
+            (good,subs)= typeCompare ty temp
+          in
+          if good
+            then (Leaf,subs,"PRED")
+            else (TypeErr [String"Found '",Type temp,String"' expression (pred ...) but expected type '",Type ty,String"'"],[],"PRED Err")
         Var n  ->
           case (lookUp n c) of
             Just temp ->
@@ -297,6 +311,8 @@ type Msg
   | SubmitInput
   | SetShortContext Bool
   | SetDisplayRules Bool
+  | Example String
+  | ToggleExamples
 
 
 update : Msg -> Model -> (Model,Cmd Msg)
@@ -406,6 +422,10 @@ update msg model =
       ({model | shortContext = b},reformat ())
     SetDisplayRules b ->
       ({model | displayRules = b},reformat ())
+    Example str ->
+      ({model | input=str, showingExamples=False},Cmd.none)
+    ToggleExamples ->
+      ({model | showingExamples=not model.showingExamples},Cmd.none)
 
 selectStep : Int -> List Step -> Maybe Step
 selectStep i list =
@@ -663,17 +683,15 @@ view model =
                     , p   []
                           [ text
                               """
-                              There is a group of keywords that act almost like functions. These are:
-                              'iszero', 'succ' and 'pred'. Unlike with functions, after these keywords
-                              you MUST provide an associated term.
+                              There is a group of keywords that act like functions. These are:
                               """
                           ]
                     , p   []
-                          [ text "iszero 0 : Bool"
+                          [ text "iszero : Nat → Bool"
                           , br [][]
-                          , text "succ 5 : Nat"
+                          , text "succ : Nat → Nat"
                           , br [][]
-                          , text "pred 8 : Nat"
+                          , text "pred : Nat → Nat"
                           ]
                     , p   []
                           [ text
@@ -750,13 +768,44 @@ view model =
       , div                                           --App
           [ class "app" ]
           [ div [class "program_input" ]              --Program input 
-                [(textarea[ placeholder "Enter your program"
-                          , spellcheck False
-                          , value model.input
-                          , onInput ChangeInput
-                          ]
-                          []
-                  )
+                [ div []
+                      [ div []
+                            [ button
+                                [ onClick ToggleExamples]
+                                [ text "examples" ]
+                            , div ([ class "examples"]++
+                                    (if not model.showingExamples 
+                                      then [ class "hidden"]
+                                      else []
+                                    )
+                                  )
+                                  (map
+                                    (\(name,ex)->
+                                      button
+                                        [ onClick (Example ex)]
+                                        [ text name]
+                                    )
+                                    [ ("identity function (for natural numbers)","(λx:Nat.x) 5 : Nat")
+                                    , ("logical NOT"
+                                      ,"λx:Bool.if x then false else true : Bool→Bool"
+                                      )
+                                    , ("logical AND"
+                                      ,"λx:Bool.λy:Bool.if x then y else x : Bool→Bool→Bool"
+                                      )
+                                    , ("complex example (with context)"
+                                      , "or : Bool→Bool→Bool\n⊢\nλx:Nat.(\nif or (iszero x) (iszero (succ x))\n"++
+                                        " then succ x\n else pred x\n)\n: Nat → Nat"
+                                      )
+                                    ]
+                                  )   
+                            ]
+                      , textarea [ placeholder "Enter your program"
+                                 , spellcheck False
+                                 , value model.input
+                                 , onInput ChangeInput
+                                 ]
+                                 []
+                      ]
                 , (button [ onClick SubmitInput ] [text "↲"])
                 ]
           , div [ class "parse_note" ]                --Parsing error
@@ -1025,9 +1074,6 @@ showTerm_internal noHangs isLatex t v =
       case term of
         Lam _ _ _ ->True
         Cond _ _ _->True
-        IsZero _  ->True
-        Succ _    ->True
-        Pred _    ->True
         _ -> False
   in
   case t of
@@ -1058,12 +1104,9 @@ showTerm_internal noHangs isLatex t v =
         else
           " "++(showTerm isLatex t2 v)
       )
-    IsZero term ->
-      "iszero "++(showTerm isLatex term v)
-    Succ term ->
-      "succ "++(showTerm isLatex term v)
-    Pred term ->
-      "pred "++(showTerm isLatex term v)
+    IsZero -> "iszero"
+    Succ   -> "succ"
+    Pred   -> "pred"
     Cond c t1 t2 ->
       "if "++showTerm isLatex c v++" then "++showTerm isLatex t1 v++" else "++showTerm isLatex t2 v
     Nat n -> fromInt n
@@ -1208,14 +1251,14 @@ type ParsedTerm
   | CondPT  ParsedTerm ParsedTerm ParsedTerm
   | IntPT Int
   | BoolPT Bool
-  | IsZeroPT ParsedTerm
-  | SuccPT ParsedTerm
-  | PredPT ParsedTerm
+  | IsZeroPT
+  | SuccPT
+  | PredPT
 
 programP : Parser (ParsedContext,ParsedTerm,Type)
 programP = 
   Parser.oneOf
-    [ contextProgramP
+    [ backtrackable contextProgramP
     , noncontextProgramP
     ]
 
@@ -1301,11 +1344,11 @@ termP =
   Pratt.expression
     { oneOf =
       [ condTerm
-      , iszeroTerm
-      , succTerm
-      , predTerm
       , Pratt.constant (Parser.keyword "true") (BoolPT True)
       , Pratt.constant (Parser.keyword "false") (BoolPT False)
+      , Pratt.constant (Parser.keyword "iszero") (IsZeroPT)
+      , Pratt.constant (Parser.keyword "succ") (SuccPT)
+      , Pratt.constant (Parser.keyword "pred") (PredPT)
       , Pratt.literal (Parser.succeed VarPT |= varP)
       , lamTerm
       , brcTerm
@@ -1322,27 +1365,6 @@ brcTerm config =
     |. Parser.symbol "("
     |= Pratt.subExpression 0 config
     |. Parser.symbol ")"
-
-iszeroTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
-iszeroTerm config =
-  Parser.succeed IsZeroPT
-    |. Parser.keyword "iszero"
-    |. Parser.spaces
-    |= Pratt.subExpression 3 config
-
-succTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
-succTerm config =
-  Parser.succeed SuccPT
-    |. Parser.keyword "succ"
-    |. Parser.spaces
-    |= Pratt.subExpression 3 config
-
-predTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
-predTerm config =
-  Parser.succeed PredPT
-    |. Parser.keyword "pred"
-    |. Parser.spaces
-    |= Pratt.subExpression 3 config
 
 condTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
 condTerm config =
@@ -1421,33 +1443,6 @@ transformTIter pt allVars scopeVars nextVarIndex nextAppIndex =
     find v l = filter (\e -> e>=0) (map (\(i,e) -> if (v==e) then i else -1) l)
   in
   case pt of
-    IsZeroPT term ->
-      let
-        r = transformTIter term allVars scopeVars nextVarIndex nextAppIndex
-      in
-      case r of
-        Result.Ok (nv,na,(sv,t,av))->
-          Result.Ok (nv,na,(sv,IsZero t,av))
-        err ->
-          err
-    SuccPT term ->
-      let
-        r = transformTIter term allVars scopeVars nextVarIndex nextAppIndex
-      in
-      case r of
-        Result.Ok (nv,na,(sv,t,av))->
-          Result.Ok (nv,na,(sv,Succ t,av))
-        err ->
-          err
-    PredPT term ->
-      let
-        r = transformTIter term allVars scopeVars nextVarIndex nextAppIndex
-      in
-      case r of
-        Result.Ok (nv,na,(sv,t,av))->
-          Result.Ok (nv,na,(sv,Pred t,av))
-        err ->
-          err
     VarPT str ->
       let
         found = find str scopeVars
@@ -1498,6 +1493,12 @@ transformTIter pt allVars scopeVars nextVarIndex nextAppIndex =
       Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Nat val,allVars))
     BoolPT val ->
       Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Bool val,allVars))
+    IsZeroPT ->
+      Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,IsZero,allVars))
+    SuccPT ->
+      Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Succ,allVars))
+    PredPT ->
+      Result.Ok (nextVarIndex,nextAppIndex,(scopeVars,Pred,allVars))
 
 
 

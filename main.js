@@ -5316,6 +5316,7 @@ var $author$project$Main$init = function (_v0) {
 			input: '',
 			shortContext: true,
 			showTreeUI: false,
+			showingExamples: false,
 			stepIndex: 1,
 			steps: _List_Nil,
 			tNote: '',
@@ -5563,93 +5564,60 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 					_List_Nil,
 					'BOOL Err');
 			case 'IsZero':
-				var t1 = term.a;
-				return _Utils_eq(
-					ty,
-					$author$project$Main$TFree('Bool')) ? _Utils_Tuple3(
-					$author$project$Main$Node(
-						_List_fromArray(
-							[
-								$author$project$Main$Tree(
-								{
-									children: $author$project$Main$Node(_List_Nil),
-									parent: _Utils_Tuple2(
-										c,
-										A2(
-											$author$project$Main$Ann,
-											t1,
-											$author$project$Main$TFree('Nat'))),
-									ruleName: ''
-								})
-							])),
-					_List_Nil,
-					'ISZERO') : _Utils_Tuple3(
+				var temp = A2(
+					$author$project$Main$Fun,
+					$author$project$Main$TFree('Nat'),
+					$author$project$Main$TFree('Bool'));
+				var _v3 = A2($author$project$Main$typeCompare, ty, temp);
+				var good = _v3.a;
+				var subs = _v3.b;
+				return good ? _Utils_Tuple3($author$project$Main$Leaf, subs, 'ISZERO') : _Utils_Tuple3(
 					$author$project$Main$TypeErr(
 						_List_fromArray(
 							[
-								$author$project$Main$String('Found \'Nat\' expression (iszero ...) but expected type \''),
+								$author$project$Main$String('Found \''),
+								$author$project$Main$Type(temp),
+								$author$project$Main$String('\' expression (iszero) but expected type \''),
 								$author$project$Main$Type(ty),
 								$author$project$Main$String('\'')
 							])),
 					_List_Nil,
 					'ISZERO Err');
 			case 'Succ':
-				var t1 = term.a;
-				return _Utils_eq(
-					ty,
-					$author$project$Main$TFree('Nat')) ? _Utils_Tuple3(
-					$author$project$Main$Node(
-						_List_fromArray(
-							[
-								$author$project$Main$Tree(
-								{
-									children: $author$project$Main$Node(_List_Nil),
-									parent: _Utils_Tuple2(
-										c,
-										A2(
-											$author$project$Main$Ann,
-											t1,
-											$author$project$Main$TFree('Nat'))),
-									ruleName: ''
-								})
-							])),
-					_List_Nil,
-					'SUCC') : _Utils_Tuple3(
+				var temp = A2(
+					$author$project$Main$Fun,
+					$author$project$Main$TFree('Nat'),
+					$author$project$Main$TFree('Nat'));
+				var _v4 = A2($author$project$Main$typeCompare, ty, temp);
+				var good = _v4.a;
+				var subs = _v4.b;
+				return good ? _Utils_Tuple3($author$project$Main$Leaf, subs, 'SUCC') : _Utils_Tuple3(
 					$author$project$Main$TypeErr(
 						_List_fromArray(
 							[
-								$author$project$Main$String('Found \'Nat\' expression (succ ...) but expected type \''),
+								$author$project$Main$String('Found \''),
+								$author$project$Main$Type(temp),
+								$author$project$Main$String('\' expression (succ ...) but expected type \''),
 								$author$project$Main$Type(ty),
 								$author$project$Main$String('\'')
 							])),
 					_List_Nil,
 					'SUCC Err');
 			case 'Pred':
-				var t1 = term.a;
-				return _Utils_eq(
-					ty,
-					$author$project$Main$TFree('Nat')) ? _Utils_Tuple3(
-					$author$project$Main$Node(
-						_List_fromArray(
-							[
-								$author$project$Main$Tree(
-								{
-									children: $author$project$Main$Node(_List_Nil),
-									parent: _Utils_Tuple2(
-										c,
-										A2(
-											$author$project$Main$Ann,
-											t1,
-											$author$project$Main$TFree('Nat'))),
-									ruleName: ''
-								})
-							])),
-					_List_Nil,
-					'PRED') : _Utils_Tuple3(
+				var temp = A2(
+					$author$project$Main$Fun,
+					$author$project$Main$TFree('Nat'),
+					$author$project$Main$TFree('Nat'));
+				var _v5 = A2($author$project$Main$typeCompare, ty, temp);
+				var good = _v5.a;
+				var subs = _v5.b;
+				return good ? _Utils_Tuple3($author$project$Main$Leaf, subs, 'PRED') : _Utils_Tuple3(
 					$author$project$Main$TypeErr(
 						_List_fromArray(
 							[
-								$author$project$Main$String('Found \'Nat\' expression (pred ...) but expected type \''),
+								$author$project$Main$String('Found \''),
+								$author$project$Main$Type(temp),
+								$author$project$Main$String('\' expression (pred ...) but expected type \''),
 								$author$project$Main$Type(ty),
 								$author$project$Main$String('\'')
 							])),
@@ -5657,16 +5625,16 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 					'PRED Err');
 			case 'Var':
 				var n = term.a;
-				var _v3 = A2($author$project$Main$lookUp, n, c);
-				if (_v3.$ === 'Just') {
-					var temp = _v3.a;
-					var found = function (_v5) {
-						var x = _v5.a;
+				var _v6 = A2($author$project$Main$lookUp, n, c);
+				if (_v6.$ === 'Just') {
+					var temp = _v6.a;
+					var found = function (_v8) {
+						var x = _v8.a;
 						return x;
 					}(temp);
-					var _v4 = A2($author$project$Main$typeCompare, ty, found);
-					var good = _v4.a;
-					var subs = _v4.b;
+					var _v7 = A2($author$project$Main$typeCompare, ty, found);
+					var good = _v7.a;
+					var subs = _v7.b;
 					return good ? _Utils_Tuple3(
 						A3($author$project$Main$LeafC, n, ty, c),
 						subs,
@@ -5737,9 +5705,9 @@ var $author$project$Main$makeAssumptions = function (_v0) {
 				if (ty.$ === 'Fun') {
 					var ty1 = ty.a;
 					var ty2 = ty.b;
-					var _v7 = A2($author$project$Main$typeCompare, ty1, varTy);
-					var good = _v7.a;
-					var subs = _v7.b;
+					var _v10 = A2($author$project$Main$typeCompare, ty1, varTy);
+					var good = _v10.a;
+					var subs = _v10.b;
 					return good ? _Utils_Tuple3(
 						$author$project$Main$Node(
 							_List_fromArray(
@@ -6178,6 +6146,7 @@ var $author$project$Main$expandStepped = F3(
 		}
 	});
 var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (result.$ === 'Ok') {
@@ -6199,11 +6168,6 @@ var $elm$core$Result$mapError = F2(
 				f(e));
 		}
 	});
-var $elm$parser$Parser$Optional = {$: 'Optional'};
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
 		return {$: 'Bad', a: a, b: b};
@@ -6215,6 +6179,27 @@ var $elm$parser$Parser$Advanced$Good = F3(
 var $elm$parser$Parser$Advanced$Parser = function (a) {
 	return {$: 'Parser', a: a};
 };
+var $elm$parser$Parser$Advanced$backtrackable = function (_v0) {
+	var parse = _v0.a;
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s0) {
+			var _v1 = parse(s0);
+			if (_v1.$ === 'Bad') {
+				var x = _v1.b;
+				return A2($elm$parser$Parser$Advanced$Bad, false, x);
+			} else {
+				var a = _v1.b;
+				var s1 = _v1.c;
+				return A3($elm$parser$Parser$Advanced$Good, false, a, s1);
+			}
+		});
+};
+var $elm$parser$Parser$backtrackable = $elm$parser$Parser$Advanced$backtrackable;
+var $elm$parser$Parser$Optional = {$: 'Optional'};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$parser$Parser$Advanced$map2 = F3(
 	function (func, _v0, _v1) {
 		var parseA = _v0.a;
@@ -6351,7 +6336,6 @@ var $elm$parser$Parser$Advanced$fromState = F2(
 			A4($elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
 	});
 var $elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
-var $elm$core$Basics$not = _Basics_not;
 var $elm$parser$Parser$Advanced$token = function (_v0) {
 	var str = _v0.a;
 	var expecting = _v0.b;
@@ -7181,25 +7165,12 @@ var $author$project$Main$BoolPT = function (a) {
 var $author$project$Main$IntPT = function (a) {
 	return {$: 'IntPT', a: a};
 };
+var $author$project$Main$IsZeroPT = {$: 'IsZeroPT'};
+var $author$project$Main$PredPT = {$: 'PredPT'};
+var $author$project$Main$SuccPT = {$: 'SuccPT'};
 var $author$project$Main$VarPT = function (a) {
 	return {$: 'VarPT', a: a};
 };
-var $elm$parser$Parser$Advanced$backtrackable = function (_v0) {
-	var parse = _v0.a;
-	return $elm$parser$Parser$Advanced$Parser(
-		function (s0) {
-			var _v1 = parse(s0);
-			if (_v1.$ === 'Bad') {
-				var x = _v1.b;
-				return A2($elm$parser$Parser$Advanced$Bad, false, x);
-			} else {
-				var a = _v1.b;
-				var s1 = _v1.c;
-				return A3($elm$parser$Parser$Advanced$Good, false, a, s1);
-			}
-		});
-};
-var $elm$parser$Parser$backtrackable = $elm$parser$Parser$Advanced$backtrackable;
 var $author$project$Main$brcTerm = function (config) {
 	return A2(
 		$elm$parser$Parser$keeper,
@@ -7465,21 +7436,6 @@ var $elm$parser$Parser$Advanced$int = F2(
 			});
 	});
 var $elm$parser$Parser$int = A2($elm$parser$Parser$Advanced$int, $elm$parser$Parser$ExpectingInt, $elm$parser$Parser$ExpectingInt);
-var $author$project$Main$IsZeroPT = function (a) {
-	return {$: 'IsZeroPT', a: a};
-};
-var $author$project$Main$iszeroTerm = function (config) {
-	return A2(
-		$elm$parser$Parser$keeper,
-		A2(
-			$elm$parser$Parser$ignorer,
-			A2(
-				$elm$parser$Parser$ignorer,
-				$elm$parser$Parser$succeed($author$project$Main$IsZeroPT),
-				$elm$parser$Parser$keyword('iszero')),
-			$elm$parser$Parser$spaces),
-		A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config));
-};
 var $author$project$Main$LamPT = F3(
 	function (a, b, c) {
 		return {$: 'LamPT', a: a, b: b, c: c};
@@ -7514,36 +7470,6 @@ var $author$project$Main$lamTerm = function (config) {
 				$elm$parser$Parser$spaces)),
 		A2($dmy$elm_pratt_parser$Pratt$subExpression, 1, config));
 };
-var $author$project$Main$PredPT = function (a) {
-	return {$: 'PredPT', a: a};
-};
-var $author$project$Main$predTerm = function (config) {
-	return A2(
-		$elm$parser$Parser$keeper,
-		A2(
-			$elm$parser$Parser$ignorer,
-			A2(
-				$elm$parser$Parser$ignorer,
-				$elm$parser$Parser$succeed($author$project$Main$PredPT),
-				$elm$parser$Parser$keyword('pred')),
-			$elm$parser$Parser$spaces),
-		A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config));
-};
-var $author$project$Main$SuccPT = function (a) {
-	return {$: 'SuccPT', a: a};
-};
-var $author$project$Main$succTerm = function (config) {
-	return A2(
-		$elm$parser$Parser$keeper,
-		A2(
-			$elm$parser$Parser$ignorer,
-			A2(
-				$elm$parser$Parser$ignorer,
-				$elm$parser$Parser$succeed($author$project$Main$SuccPT),
-				$elm$parser$Parser$keyword('succ')),
-			$elm$parser$Parser$spaces),
-		A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config));
-};
 var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 	{
 		andThenOneOf: _List_fromArray(
@@ -7557,9 +7483,6 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 		oneOf: _List_fromArray(
 			[
 				$author$project$Main$condTerm,
-				$author$project$Main$iszeroTerm,
-				$author$project$Main$succTerm,
-				$author$project$Main$predTerm,
 				A2(
 				$dmy$elm_pratt_parser$Pratt$constant,
 				$elm$parser$Parser$keyword('true'),
@@ -7568,6 +7491,18 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 				$dmy$elm_pratt_parser$Pratt$constant,
 				$elm$parser$Parser$keyword('false'),
 				$author$project$Main$BoolPT(false)),
+				A2(
+				$dmy$elm_pratt_parser$Pratt$constant,
+				$elm$parser$Parser$keyword('iszero'),
+				$author$project$Main$IsZeroPT),
+				A2(
+				$dmy$elm_pratt_parser$Pratt$constant,
+				$elm$parser$Parser$keyword('succ'),
+				$author$project$Main$SuccPT),
+				A2(
+				$dmy$elm_pratt_parser$Pratt$constant,
+				$elm$parser$Parser$keyword('pred'),
+				$author$project$Main$PredPT),
 				$dmy$elm_pratt_parser$Pratt$literal(
 				A2(
 					$elm$parser$Parser$keeper,
@@ -7629,7 +7564,10 @@ var $author$project$Main$noncontextProgramP = A2(
 var $elm$parser$Parser$oneOf = $elm$parser$Parser$Advanced$oneOf;
 var $author$project$Main$programP = $elm$parser$Parser$oneOf(
 	_List_fromArray(
-		[$author$project$Main$contextProgramP, $author$project$Main$noncontextProgramP]));
+		[
+			$elm$parser$Parser$backtrackable($author$project$Main$contextProgramP),
+			$author$project$Main$noncontextProgramP
+		]));
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
 		return {col: col, problem: problem, row: row};
@@ -7720,19 +7658,13 @@ var $author$project$Main$Cond = F3(
 	function (a, b, c) {
 		return {$: 'Cond', a: a, b: b, c: c};
 	});
-var $author$project$Main$IsZero = function (a) {
-	return {$: 'IsZero', a: a};
-};
+var $author$project$Main$IsZero = {$: 'IsZero'};
 var $author$project$Main$Lam = F3(
 	function (a, b, c) {
 		return {$: 'Lam', a: a, b: b, c: c};
 	});
-var $author$project$Main$Pred = function (a) {
-	return {$: 'Pred', a: a};
-};
-var $author$project$Main$Succ = function (a) {
-	return {$: 'Succ', a: a};
-};
+var $author$project$Main$Pred = {$: 'Pred'};
+var $author$project$Main$Succ = {$: 'Succ'};
 var $author$project$Main$Var = function (a) {
 	return {$: 'Var', a: a};
 };
@@ -7749,9 +7681,9 @@ var $elm$core$Result$withDefault = F2(
 var $author$project$Main$transformTIter = F5(
 	function (pt, allVars, scopeVars, nextVarIndex, nextAppIndex) {
 		var getT = function (r) {
-			return function (_v25) {
-				var _v26 = _v25.c;
-				var t = _v26.b;
+			return function (_v16) {
+				var _v17 = _v16.c;
+				var t = _v17.b;
 				return t;
 			}(
 				A2(
@@ -7774,9 +7706,9 @@ var $author$project$Main$transformTIter = F5(
 					},
 					A2(
 						$elm$core$List$map,
-						function (_v24) {
-							var i = _v24.a;
-							var e = _v24.b;
+						function (_v15) {
+							var i = _v15.a;
+							var e = _v15.b;
 							return _Utils_eq(v, e) ? i : (-1);
 						},
 						l));
@@ -7784,12 +7716,12 @@ var $author$project$Main$transformTIter = F5(
 		var andThenIter = F2(
 			function (res, nextTerm) {
 				if (res.$ === 'Ok') {
-					var _v22 = res.a;
-					var nv = _v22.a;
-					var na = _v22.b;
-					var _v23 = _v22.c;
-					var t = _v23.b;
-					var av = _v23.c;
+					var _v13 = res.a;
+					var nv = _v13.a;
+					var na = _v13.b;
+					var _v14 = _v13.c;
+					var t = _v14.b;
+					var av = _v14.c;
 					return A5($author$project$Main$transformTIter, nextTerm, av, scopeVars, nv, na);
 				} else {
 					var str = res.a;
@@ -7797,75 +7729,6 @@ var $author$project$Main$transformTIter = F5(
 				}
 			});
 		switch (pt.$) {
-			case 'IsZeroPT':
-				var term = pt.a;
-				var r = A5($author$project$Main$transformTIter, term, allVars, scopeVars, nextVarIndex, nextAppIndex);
-				if (r.$ === 'Ok') {
-					var _v2 = r.a;
-					var nv = _v2.a;
-					var na = _v2.b;
-					var _v3 = _v2.c;
-					var sv = _v3.a;
-					var t = _v3.b;
-					var av = _v3.c;
-					return $elm$core$Result$Ok(
-						_Utils_Tuple3(
-							nv,
-							na,
-							_Utils_Tuple3(
-								sv,
-								$author$project$Main$IsZero(t),
-								av)));
-				} else {
-					var err = r;
-					return err;
-				}
-			case 'SuccPT':
-				var term = pt.a;
-				var r = A5($author$project$Main$transformTIter, term, allVars, scopeVars, nextVarIndex, nextAppIndex);
-				if (r.$ === 'Ok') {
-					var _v5 = r.a;
-					var nv = _v5.a;
-					var na = _v5.b;
-					var _v6 = _v5.c;
-					var sv = _v6.a;
-					var t = _v6.b;
-					var av = _v6.c;
-					return $elm$core$Result$Ok(
-						_Utils_Tuple3(
-							nv,
-							na,
-							_Utils_Tuple3(
-								sv,
-								$author$project$Main$Succ(t),
-								av)));
-				} else {
-					var err = r;
-					return err;
-				}
-			case 'PredPT':
-				var term = pt.a;
-				var r = A5($author$project$Main$transformTIter, term, allVars, scopeVars, nextVarIndex, nextAppIndex);
-				if (r.$ === 'Ok') {
-					var _v8 = r.a;
-					var nv = _v8.a;
-					var na = _v8.b;
-					var _v9 = _v8.c;
-					var sv = _v9.a;
-					var t = _v9.b;
-					var av = _v9.c;
-					return $elm$core$Result$Ok(
-						_Utils_Tuple3(
-							nv,
-							na,
-							_Utils_Tuple3(
-								sv,
-								$author$project$Main$Pred(t),
-								av)));
-				} else {
-					var err = r;
-					return err;
-				}
 			case 'VarPT':
 				var str = pt.a;
 				var found = A2(find, str, scopeVars);
@@ -7905,13 +7768,13 @@ var $author$project$Main$transformTIter = F5(
 					return $elm$core$Result$Err('variable with name \'' + (str + '\' already in use in the scope of lambda'));
 				} else {
 					if (r.$ === 'Ok') {
-						var _v13 = r.a;
-						var nv = _v13.a;
-						var na = _v13.b;
-						var _v14 = _v13.c;
-						var sv = _v14.a;
-						var t = _v14.b;
-						var av = _v14.c;
+						var _v4 = r.a;
+						var nv = _v4.a;
+						var na = _v4.b;
+						var _v5 = _v4.c;
+						var sv = _v5.a;
+						var t = _v5.b;
+						var av = _v5.c;
 						return $elm$core$Result$Ok(
 							_Utils_Tuple3(
 								nv,
@@ -7931,13 +7794,13 @@ var $author$project$Main$transformTIter = F5(
 				var r1 = A5($author$project$Main$transformTIter, term1, allVars, scopeVars, nextVarIndex, nextAppIndex + 1);
 				var r2 = A2(andThenIter, r1, term2);
 				if (r2.$ === 'Ok') {
-					var _v16 = r2.a;
-					var nv = _v16.a;
-					var na = _v16.b;
-					var _v17 = _v16.c;
-					var sv = _v17.a;
-					var t2 = _v17.b;
-					var av = _v17.c;
+					var _v7 = r2.a;
+					var nv = _v7.a;
+					var na = _v7.b;
+					var _v8 = _v7.c;
+					var sv = _v8.a;
+					var t2 = _v8.b;
+					var av = _v8.c;
 					return $elm$core$Result$Ok(
 						_Utils_Tuple3(
 							nv,
@@ -7962,13 +7825,13 @@ var $author$project$Main$transformTIter = F5(
 				var r2 = A2(andThenIter, r1, term2);
 				var r3 = A2(andThenIter, r2, term3);
 				if (r3.$ === 'Ok') {
-					var _v19 = r3.a;
-					var nv = _v19.a;
-					var na = _v19.b;
-					var _v20 = _v19.c;
-					var sv = _v20.a;
-					var t3 = _v20.b;
-					var av = _v20.c;
+					var _v10 = r3.a;
+					var nv = _v10.a;
+					var na = _v10.b;
+					var _v11 = _v10.c;
+					var sv = _v11.a;
+					var t3 = _v11.b;
+					var av = _v11.c;
 					return $elm$core$Result$Ok(
 						_Utils_Tuple3(
 							nv,
@@ -7995,7 +7858,7 @@ var $author$project$Main$transformTIter = F5(
 							scopeVars,
 							$author$project$Main$Nat(val),
 							allVars)));
-			default:
+			case 'BoolPT':
 				var val = pt.a;
 				return $elm$core$Result$Ok(
 					_Utils_Tuple3(
@@ -8005,6 +7868,24 @@ var $author$project$Main$transformTIter = F5(
 							scopeVars,
 							$author$project$Main$Bool(val),
 							allVars)));
+			case 'IsZeroPT':
+				return $elm$core$Result$Ok(
+					_Utils_Tuple3(
+						nextVarIndex,
+						nextAppIndex,
+						_Utils_Tuple3(scopeVars, $author$project$Main$IsZero, allVars)));
+			case 'SuccPT':
+				return $elm$core$Result$Ok(
+					_Utils_Tuple3(
+						nextVarIndex,
+						nextAppIndex,
+						_Utils_Tuple3(scopeVars, $author$project$Main$Succ, allVars)));
+			default:
+				return $elm$core$Result$Ok(
+					_Utils_Tuple3(
+						nextVarIndex,
+						nextAppIndex,
+						_Utils_Tuple3(scopeVars, $author$project$Main$Pred, allVars)));
 		}
 	});
 var $author$project$Main$transformProgram = function (_v0) {
@@ -8257,17 +8138,33 @@ var $author$project$Main$update = F2(
 						model,
 						{shortContext: b}),
 					$author$project$Main$reformat(_Utils_Tuple0));
-			default:
+			case 'SetDisplayRules':
 				var b = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{displayRules: b}),
 					$author$project$Main$reformat(_Utils_Tuple0));
+			case 'Example':
+				var str = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{input: str, showingExamples: false}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{showingExamples: !model.showingExamples}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$ChangeInput = function (a) {
 	return {$: 'ChangeInput', a: a};
+};
+var $author$project$Main$Example = function (a) {
+	return {$: 'Example', a: a};
 };
 var $author$project$Main$ExpandWhole = {$: 'ExpandWhole'};
 var $author$project$Main$Reset = {$: 'Reset'};
@@ -8280,6 +8177,7 @@ var $author$project$Main$SetShortContext = function (a) {
 var $author$project$Main$StepBack = {$: 'StepBack'};
 var $author$project$Main$StepForward = {$: 'StepForward'};
 var $author$project$Main$SubmitInput = {$: 'SubmitInput'};
+var $author$project$Main$ToggleExamples = {$: 'ToggleExamples'};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -11605,12 +11503,6 @@ var $author$project$Main$showTerm_internal = F4(
 					return true;
 				case 'Cond':
 					return true;
-				case 'IsZero':
-					return true;
-				case 'Succ':
-					return true;
-				case 'Pred':
-					return true;
 				default:
 					return false;
 			}
@@ -11646,14 +11538,11 @@ var $author$project$Main$showTerm_internal = F4(
 					isOpenEnded(t1) ? ('(' + (A3($author$project$Main$showTerm, isLatex, t1, v) + ')')) : A4($author$project$Main$showTerm_internal, true, isLatex, t1, v),
 					((priority(t2) >= 2) || (isOpenEnded(t2) && noHangs)) ? (' (' + (A3($author$project$Main$showTerm, isLatex, t2, v) + ')')) : (' ' + A3($author$project$Main$showTerm, isLatex, t2, v)));
 			case 'IsZero':
-				var term = t.a;
-				return 'iszero ' + A3($author$project$Main$showTerm, isLatex, term, v);
+				return 'iszero';
 			case 'Succ':
-				var term = t.a;
-				return 'succ ' + A3($author$project$Main$showTerm, isLatex, term, v);
+				return 'succ';
 			case 'Pred':
-				var term = t.a;
-				return 'pred ' + A3($author$project$Main$showTerm, isLatex, term, v);
+				return 'pred';
 			case 'Cond':
 				var c = t.a;
 				var t1 = t.b;
@@ -12517,18 +12406,18 @@ var $author$project$Main$view = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('\r\n                              There is a group of keywords that act almost like functions. These are:\r\n                              \'iszero\', \'succ\' and \'pred\'. Unlike with functions, after these keywords\r\n                              you MUST provide an associated term.\r\n                              ')
+												$elm$html$Html$text('\r\n                              There is a group of keywords that act like functions. These are:\r\n                              ')
 											])),
 										A2(
 										$elm$html$Html$p,
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('iszero 0 : Bool'),
+												$elm$html$Html$text('iszero : Nat → Bool'),
 												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												$elm$html$Html$text('succ 5 : Nat'),
+												$elm$html$Html$text('succ : Nat → Nat'),
 												A2($elm$html$Html$br, _List_Nil, _List_Nil),
-												$elm$html$Html$text('pred 8 : Nat')
+												$elm$html$Html$text('pred : Nat → Nat')
 											])),
 										A2(
 										$elm$html$Html$p,
@@ -12690,15 +12579,72 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								A2(
-								$elm$html$Html$textarea,
+								$elm$html$Html$div,
+								_List_Nil,
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$placeholder('Enter your program'),
-										$elm$html$Html$Attributes$spellcheck(false),
-										$elm$html$Html$Attributes$value(model.input),
-										$elm$html$Html$Events$onInput($author$project$Main$ChangeInput)
-									]),
-								_List_Nil),
+										A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$button,
+												_List_fromArray(
+													[
+														$elm$html$Html$Events$onClick($author$project$Main$ToggleExamples)
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('examples')
+													])),
+												A2(
+												$elm$html$Html$div,
+												_Utils_ap(
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('examples')
+														]),
+													(!model.showingExamples) ? _List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('hidden')
+														]) : _List_Nil),
+												A2(
+													$elm$core$List$map,
+													function (_v0) {
+														var name = _v0.a;
+														var ex = _v0.b;
+														return A2(
+															$elm$html$Html$button,
+															_List_fromArray(
+																[
+																	$elm$html$Html$Events$onClick(
+																	$author$project$Main$Example(ex))
+																]),
+															_List_fromArray(
+																[
+																	$elm$html$Html$text(name)
+																]));
+													},
+													_List_fromArray(
+														[
+															_Utils_Tuple2('identity function (for natural numbers)', '(λx:Nat.x) 5 : Nat'),
+															_Utils_Tuple2('logical NOT', 'λx:Bool.if x then false else true : Bool→Bool'),
+															_Utils_Tuple2('logical AND', 'λx:Bool.λy:Bool.if x then y else x : Bool→Bool→Bool'),
+															_Utils_Tuple2('complex example (with context)', 'or : Bool→Bool→Bool\n⊢\nλx:Nat.(\nif or (iszero x) (iszero (succ x))\n' + ' then succ x\n else pred x\n)\n: Nat → Nat')
+														])))
+											])),
+										A2(
+										$elm$html$Html$textarea,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$placeholder('Enter your program'),
+												$elm$html$Html$Attributes$spellcheck(false),
+												$elm$html$Html$Attributes$value(model.input),
+												$elm$html$Html$Events$onInput($author$project$Main$ChangeInput)
+											]),
+										_List_Nil)
+									])),
 								A2(
 								$elm$html$Html$button,
 								_List_fromArray(

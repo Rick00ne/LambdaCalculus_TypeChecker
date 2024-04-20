@@ -28,6 +28,7 @@
 	  	display: none;
   	}
   	.overlay_background {
+      z-index: 1;
   		position: fixed;
   		width: 100%;
   		height: 100%;
@@ -36,6 +37,7 @@
   		background-color: rgba(0,0,0,0.9);
   	}
     .overlay_window {
+      z-index: 1;
       border: solid darkorange 2px;
       border-radius: 5px; 
       display: flex;
@@ -181,11 +183,12 @@
   		font:inherit;
   		background: rgb(211,134,41);
   		border: inset black 2px;
-  		flex: 1;
   		min-height: 4.5em;
   		height: 0;
   		overflow-x: hidden;
   		overflow-y: auto;
+      cursor:auto;
+      width:100%;
   	}
   	.program_input textarea::-webkit-scrollbar-corner {
   		background: rgb(211,134,41);
@@ -194,15 +197,48 @@
   		background: url(resizer.svg) no-repeat;
 	    background-size: 15px;
 	    pointer-events: none;
-	}
-	.program_input textarea::-webkit-scrollbar-thumb {
+  	}
+  	.program_input textarea::-webkit-scrollbar-thumb {
   		background-color: black;
   		border-radius: 0.25em
   	}
-  	.program_input button {
+    .program_input>div{
+      flex: 1;
+    }
+    .program_input>div>div{
+      float:right;
+      position: relative;
+    }
+    .program_input>div>div>button{ /*example selector*/
+      float:right;
+      border-radius: 0.2em 0.2em 0 0;
+    }
+  	.program_input>button {
   		margin-left: 0.5em;
   		width: 3em;
   	}
+    .examples{
+      display: flex;
+      flex-direction: column;
+      position:absolute;
+      overflow: hidden;
+      border: solid darkorange 0.1em;
+      border-radius: 0.25em 0 0.25em 0.25em;
+      width: max-content;
+      top: 1.3em;
+      right: 0;
+    }
+    .examples.hidden{
+      display: none;
+    }
+    .examples button{
+      border: none;
+      border-radius: 0;
+      background-color: rgba(0,0,0,0.7);
+    }
+    .examples button:not(:last-child){
+      border-bottom: solid 0.1em
+    }
   	.parse_note {
   		overflow: hidden;
   	}
@@ -478,8 +514,8 @@
   	button:hover, input[type="submit"]:hover {
   		background: rgba(0,0,0,0.9);
   	}
-  	button:activeinput[type="submit"]:active {
-  		background: rgba(0,0,0,0.7);
+  	button:active, input[type="submit"]:active {
+  		background: rgba(0,0,0,0.5);
   	}
   	button:disabled {
   	    border-color: darkgray;
