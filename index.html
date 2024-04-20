@@ -24,7 +24,8 @@
   		width: 15px;
   		height: 15px;
   	}
-  	#report_overlay, #export_overlay, #help_overlay, #unindented {
+  	#report_overlay, #export_overlay,
+    #help_overlay, #unindented {
 	  	display: none;
   	}
   	.overlay_background {
@@ -45,7 +46,8 @@
       background: rgba(55,55,55,1);
       width: max-content;
       max-width: 75%;
-      max-height: 75%;
+      max-height: 80vh;
+      min-height: 40%;
       padding: 1em;
       position: absolute;
       top: 50%;
@@ -71,18 +73,30 @@
     .overlay_window> div::-webkit-scrollbar-thumb {
       background: black;
     }
+    #help_overlay .overlay_window>div>div{ /*Rules list*/
+      display: flex;
+      flex-wrap: wrap;
+    }
+    #help_overlay table{
+      padding: 1em;
+    }
     .latex, form textarea{
       display: block;
       resize: none;
       font-size: inherit;
       text-wrap: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
+      overflow: auto;
       margin: 0.2em auto;
       border: inset black 2px;
       padding: 5pt;
       background: white;
       width: 90%;
+      max-height: 45vh;
+      min-height: 10em;
+    }
+    .latex.oneline{
+      max-height: none;
+      min-height: auto;
     }
     .latex::-webkit-scrollbar-thumb,
     form textarea::-webkit-scrollbar-thumb {
@@ -186,17 +200,12 @@
   		min-height: 4.5em;
   		height: 0;
   		overflow-x: hidden;
-  		overflow-y: auto;
+  		overflow-y: scroll;
       cursor:auto;
       width:100%;
   	}
   	.program_input textarea::-webkit-scrollbar-corner {
   		background: rgb(211,134,41);
-  	}
-  	.program_input textarea::-webkit-resizer {
-  		background: url(resizer.svg) no-repeat;
-	    background-size: 15px;
-	    pointer-events: none;
   	}
   	.program_input textarea::-webkit-scrollbar-thumb {
   		background-color: black;
@@ -275,7 +284,7 @@
   		margin: 10pt auto 0;
   		width: max-content;
   		padding: 5pt;
-  		border: solid darkorange;
+  		border: solid darkorange 0.1em;
   		border-radius: 5pt 5pt 0 0;
   		border-bottom: none;
   		background: rgba(255,165,0,0.3);
@@ -318,25 +327,31 @@
   	.tree>div {
   		width: max-content;
   	}
+    #help_overlay table,
   	.tree table {
   		text-align: center;
   		border-spacing: 0px;
   		font-size: inherit;
   		display: inline-block;
   	}
+    #help_overlay table>tr:nth-child(2)>td,
   	.tree>div div,.tree table>tr:nth-child(2)>td {
   		border-top: solid black 0.1em;
   	}
+    #help_overlay table td:nth-child(2n):not(.rule),
   	.tree table>tr:nth-child(1)>td:nth-child(2n):not(.rule) {
   		width:2em;
   	}
+    #help_overlay table .rule,
   	.tree .rule {
   		line-height:2em;
   		padding-left: 0.2em;
   	}
+    #help_overlay tr,
   	.tree tr {
   		vertical-align: bottom;
   	}
+    #help_overlay table *,
   	.tree * {
   		padding: 0;
   		line-height: 1em;
@@ -354,25 +369,25 @@
   		border-radius: 6px
   	}
   	.tree::-webkit-scrollbar-track {
-	  background: rgb(33,33,33);
-	  border: inset black 2px;
-	}
-	.tree::-webkit-scrollbar-corner {
-		background: rgb(33,33,33);
-	}
-	.tree::-webkit-resizer {
-	    background: url(resizer.svg) no-repeat;
-	    background-size: 15px;
-	    pointer-events: none;
-	}
-	.control, .zoom {
-		color: darkorange;
-	}
+  	  background: rgb(33,33,33);
+  	  border: inset black 2px;
+  	}
+  	.tree::-webkit-scrollbar-corner {
+  		background: rgb(33,33,33);
+  	}
+    .program_input textarea::-webkit-resizer,
+  	.tree::-webkit-resizer {
+  	    background: url(resizer.svg) no-repeat;
+  	    background-size: 100%;
+  	}
+  	.control, .zoom {
+  		color: darkorange;
+  	}
   	.control {
   		margin: 0 auto;
   		width: max-content;
   		padding: 5pt;
-  		border: solid darkorange;
+  		border: solid darkorange 0.1em;
   		border-radius: 0 0 5pt 5pt;
   		border-top: none;
   		background: rgba(255,165,0,0.3);

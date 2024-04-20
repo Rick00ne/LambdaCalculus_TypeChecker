@@ -8211,6 +8211,12 @@ var $elm$html$Html$Attributes$cols = function (n) {
 		'cols',
 		$elm$core$String$fromInt(n));
 };
+var $elm$html$Html$Attributes$colspan = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'colspan',
+		$elm$core$String$fromInt(n));
+};
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$form = _VirtualDom_node('form');
@@ -8301,212 +8307,6 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		'rows',
 		$elm$core$String$fromInt(n));
 };
-var $author$project$Main$atIndex = F2(
-	function (a, l) {
-		var li = A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (i, e) {
-					return _Utils_Tuple2(i, e);
-				}),
-			l);
-		return A2($author$project$Main$lookUp, a, li);
-	});
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $elm$core$String$fromList = _String_fromList;
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $author$project$Main$toSubscript = function (n) {
-	var delta = $elm$core$Char$toCode(
-		_Utils_chr('₀')) - $elm$core$Char$toCode(
-		_Utils_chr('0'));
-	return $elm$core$String$fromList(
-		A2(
-			$elm$core$List$map,
-			function (x) {
-				return $elm$core$Char$fromCode(
-					$elm$core$Char$toCode(x) + delta);
-			},
-			$elm$core$String$toList(
-				$elm$core$String$fromInt(n))));
-};
-var $author$project$Main$showType = F2(
-	function (isLatex, t) {
-		switch (t.$) {
-			case 'TFree':
-				var str = t.a;
-				return str;
-			case 'Fun':
-				var t1 = t.a;
-				var t2 = t.b;
-				var arrow = isLatex ? '$\\to$' : '→';
-				if (t1.$ === 'Fun') {
-					return '(' + (A2($author$project$Main$showType, isLatex, t1) + (')' + (arrow + A2($author$project$Main$showType, isLatex, t2))));
-				} else {
-					return _Utils_ap(
-						A2($author$project$Main$showType, isLatex, t1),
-						_Utils_ap(
-							arrow,
-							A2($author$project$Main$showType, isLatex, t2)));
-				}
-			default:
-				var n = t.a;
-				return isLatex ? ('T$_' + ($elm$core$String$fromInt(n) + '$')) : ('T' + $author$project$Main$toSubscript(n));
-		}
-	});
-var $author$project$Main$showContext = F4(
-	function (isLatex, c, v, cs) {
-		var toStr = function (n) {
-			var _v8 = A2($author$project$Main$atIndex, n, v);
-			if (_v8.$ === 'Just') {
-				var str = _v8.a;
-				return str;
-			} else {
-				return 'var' + $elm$core$String$fromInt(n);
-			}
-		};
-		var showNormal = function (con) {
-			if (!con.b) {
-				return '';
-			} else {
-				if (!con.b.b) {
-					var _v1 = con.a;
-					var n = _v1.a;
-					var t = _v1.b.a;
-					return toStr(n) + (':' + A2($author$project$Main$showType, isLatex, t));
-				} else {
-					var _v2 = con.a;
-					var n = _v2.a;
-					var t = _v2.b.a;
-					var l = con.b;
-					return toStr(n) + (':' + (A2($author$project$Main$showType, isLatex, t) + (', ' + showNormal(l))));
-				}
-			}
-		};
-		if (cs.$ === 'Nothing') {
-			return A2(
-				$elm$core$Tuple$pair,
-				showNormal(c),
-				cs);
-		} else {
-			var _v4 = cs.a;
-			var subs = _v4.a;
-			var next = _v4.b;
-			var shiftR = F2(
-				function (l, r) {
-					return _Utils_Tuple2(
-						A2(
-							$elm$core$List$take,
-							$elm$core$List$length(l) - 1,
-							l),
-						_Utils_ap(
-							A2(
-								$elm$core$List$drop,
-								$elm$core$List$length(l) - 1,
-								l),
-							r));
-				});
-			var matchBiggest = F2(
-				function (context, out) {
-					matchBiggest:
-					while (true) {
-						var _v5 = A2($author$project$Main$getIndex, context, subs);
-						if (_v5.$ === 'Nothing') {
-							var _v6 = A2(shiftR, context, out);
-							var l = _v6.a;
-							var r = _v6.b;
-							if (_Utils_eq(l, _List_Nil)) {
-								return _Utils_Tuple2(-1, r);
-							} else {
-								var $temp$context = l,
-									$temp$out = r;
-								context = $temp$context;
-								out = $temp$out;
-								continue matchBiggest;
-							}
-						} else {
-							var s = _v5.a;
-							return _Utils_Tuple2(s, out);
-						}
-					}
-				});
-			var gamma = function (n) {
-				return isLatex ? ('$\\Gamma_' + ($elm$core$String$fromInt(n) + '$')) : ('Γ' + $author$project$Main$toSubscript(n));
-			};
-			var _v7 = A2(matchBiggest, c, _List_Nil);
-			var sub = _v7.a;
-			var leftout = _v7.b;
-			var anyLeft = !_Utils_eq(leftout, _List_Nil);
-			var newCs = anyLeft ? $elm$core$Maybe$Just(
-				_Utils_Tuple2(
-					_Utils_ap(
-						subs,
-						_List_fromArray(
-							[
-								_Utils_Tuple2(next, c)
-							])),
-					next + 1)) : cs;
-			return A2(
-				$elm$core$Tuple$pair,
-				_Utils_eq(sub, -1) ? showNormal(leftout) : _Utils_ap(
-					gamma(sub),
-					anyLeft ? (', ' + showNormal(leftout)) : ''),
-				newCs);
-		}
-	});
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$showConSubs = F2(
-	function (conSubs, v) {
-		return A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var n = _v0.a;
-				var c = _v0.b;
-				var cs = $elm$core$Maybe$Just(
-					_Utils_Tuple2(
-						A2($elm$core$List$take, n, conSubs),
-						0));
-				return A2(
-					$elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							'Γ' + ($author$project$Main$toSubscript(n) + (' = ' + A4($author$project$Main$showContext, false, c, v, cs).a)))
-						]));
-			},
-			conSubs);
-	});
-var $elm$html$Html$Attributes$colspan = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'colspan',
-		$elm$core$String$fromInt(n));
-};
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
-var $elm$core$List$intersperse = F2(
-	function (sep, xs) {
-		if (!xs.b) {
-			return _List_Nil;
-		} else {
-			var hd = xs.a;
-			var tl = xs.b;
-			var step = F2(
-				function (x, rest) {
-					return A2(
-						$elm$core$List$cons,
-						sep,
-						A2($elm$core$List$cons, x, rest));
-				});
-			var spersed = A3($elm$core$List$foldr, step, _List_Nil, tl);
-			return A2($elm$core$List$cons, hd, spersed);
-		}
-	});
 var $elm$html$Html$Attributes$rowspan = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -10955,6 +10755,7 @@ var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
 };
+var $elm$core$Char$fromCode = _Char_fromCode;
 var $elm$core$Basics$pow = _Basics_pow;
 var $rtfeldman$elm_hex$Hex$fromStringHelp = F3(
 	function (position, chars, accumulated) {
@@ -11113,6 +10914,10 @@ var $elm$core$Result$map = F2(
 			return $elm$core$Result$Err(e);
 		}
 	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
 var $rtfeldman$elm_hex$Hex$fromString = function (str) {
 	if ($elm$core$String$isEmpty(str)) {
 		return $elm$core$Result$Err('Empty strings are not valid hexadecimal strings.');
@@ -11479,6 +11284,201 @@ var $hecrj$html_parser$Html$Parser$run = function (str) {
 		A2($hecrj$html_parser$Html$Parser$oneOrMore, 'node', $hecrj$html_parser$Html$Parser$node),
 		str);
 };
+var $author$project$Main$atIndex = F2(
+	function (a, l) {
+		var li = A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (i, e) {
+					return _Utils_Tuple2(i, e);
+				}),
+			l);
+		return A2($author$project$Main$lookUp, a, li);
+	});
+var $elm$core$String$fromList = _String_fromList;
+var $author$project$Main$toSubscript = function (n) {
+	var delta = $elm$core$Char$toCode(
+		_Utils_chr('₀')) - $elm$core$Char$toCode(
+		_Utils_chr('0'));
+	return $elm$core$String$fromList(
+		A2(
+			$elm$core$List$map,
+			function (x) {
+				return $elm$core$Char$fromCode(
+					$elm$core$Char$toCode(x) + delta);
+			},
+			$elm$core$String$toList(
+				$elm$core$String$fromInt(n))));
+};
+var $author$project$Main$showType = F2(
+	function (isLatex, t) {
+		switch (t.$) {
+			case 'TFree':
+				var str = t.a;
+				return str;
+			case 'Fun':
+				var t1 = t.a;
+				var t2 = t.b;
+				var arrow = isLatex ? '$\\to$' : '→';
+				if (t1.$ === 'Fun') {
+					return '(' + (A2($author$project$Main$showType, isLatex, t1) + (')' + (arrow + A2($author$project$Main$showType, isLatex, t2))));
+				} else {
+					return _Utils_ap(
+						A2($author$project$Main$showType, isLatex, t1),
+						_Utils_ap(
+							arrow,
+							A2($author$project$Main$showType, isLatex, t2)));
+				}
+			default:
+				var n = t.a;
+				return isLatex ? ('T$_' + ($elm$core$String$fromInt(n) + '$')) : ('T' + $author$project$Main$toSubscript(n));
+		}
+	});
+var $author$project$Main$showContext = F4(
+	function (isLatex, c, v, cs) {
+		var toStr = function (n) {
+			var _v8 = A2($author$project$Main$atIndex, n, v);
+			if (_v8.$ === 'Just') {
+				var str = _v8.a;
+				return str;
+			} else {
+				return 'var' + $elm$core$String$fromInt(n);
+			}
+		};
+		var showNormal = function (con) {
+			if (!con.b) {
+				return '';
+			} else {
+				if (!con.b.b) {
+					var _v1 = con.a;
+					var n = _v1.a;
+					var t = _v1.b.a;
+					return toStr(n) + (':' + A2($author$project$Main$showType, isLatex, t));
+				} else {
+					var _v2 = con.a;
+					var n = _v2.a;
+					var t = _v2.b.a;
+					var l = con.b;
+					return toStr(n) + (':' + (A2($author$project$Main$showType, isLatex, t) + (', ' + showNormal(l))));
+				}
+			}
+		};
+		if (cs.$ === 'Nothing') {
+			return A2(
+				$elm$core$Tuple$pair,
+				showNormal(c),
+				cs);
+		} else {
+			var _v4 = cs.a;
+			var subs = _v4.a;
+			var next = _v4.b;
+			var shiftR = F2(
+				function (l, r) {
+					return _Utils_Tuple2(
+						A2(
+							$elm$core$List$take,
+							$elm$core$List$length(l) - 1,
+							l),
+						_Utils_ap(
+							A2(
+								$elm$core$List$drop,
+								$elm$core$List$length(l) - 1,
+								l),
+							r));
+				});
+			var matchBiggest = F2(
+				function (context, out) {
+					matchBiggest:
+					while (true) {
+						var _v5 = A2($author$project$Main$getIndex, context, subs);
+						if (_v5.$ === 'Nothing') {
+							var _v6 = A2(shiftR, context, out);
+							var l = _v6.a;
+							var r = _v6.b;
+							if (_Utils_eq(l, _List_Nil)) {
+								return _Utils_Tuple2(-1, r);
+							} else {
+								var $temp$context = l,
+									$temp$out = r;
+								context = $temp$context;
+								out = $temp$out;
+								continue matchBiggest;
+							}
+						} else {
+							var s = _v5.a;
+							return _Utils_Tuple2(s, out);
+						}
+					}
+				});
+			var gamma = function (n) {
+				return isLatex ? ('$\\Gamma_' + ($elm$core$String$fromInt(n) + '$')) : ('Γ' + $author$project$Main$toSubscript(n));
+			};
+			var _v7 = A2(matchBiggest, c, _List_Nil);
+			var sub = _v7.a;
+			var leftout = _v7.b;
+			var anyLeft = !_Utils_eq(leftout, _List_Nil);
+			var newCs = anyLeft ? $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					_Utils_ap(
+						subs,
+						_List_fromArray(
+							[
+								_Utils_Tuple2(next, c)
+							])),
+					next + 1)) : cs;
+			return A2(
+				$elm$core$Tuple$pair,
+				_Utils_eq(sub, -1) ? showNormal(leftout) : _Utils_ap(
+					gamma(sub),
+					anyLeft ? (', ' + showNormal(leftout)) : ''),
+				newCs);
+		}
+	});
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$showConSubs = F2(
+	function (conSubs, v) {
+		return A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var n = _v0.a;
+				var c = _v0.b;
+				var cs = $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						A2($elm$core$List$take, n, conSubs),
+						0));
+				return A2(
+					$elm$html$Html$div,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'Γ' + ($author$project$Main$toSubscript(n) + (' = ' + A4($author$project$Main$showContext, false, c, v, cs).a)))
+						]));
+			},
+			conSubs);
+	});
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $elm$core$List$intersperse = F2(
+	function (sep, xs) {
+		if (!xs.b) {
+			return _List_Nil;
+		} else {
+			var hd = xs.a;
+			var tl = xs.b;
+			var step = F2(
+				function (x, rest) {
+					return A2(
+						$elm$core$List$cons,
+						sep,
+						A2($elm$core$List$cons, x, rest));
+				});
+			var spersed = A3($elm$core$List$foldr, step, _List_Nil, tl);
+			return A2($elm$core$List$cons, hd, spersed);
+		}
+	});
 var $author$project$Main$showTerm = F3(
 	function (isLatex, t, v) {
 		return A4($author$project$Main$showTerm_internal, false, isLatex, t, v);
@@ -11677,7 +11677,6 @@ var $author$project$Main$showTree_Next = F5(
 						$hecrj$html_parser$Html$Parser$run('<td> &emsp; </td>')));
 				if (_v17.b) {
 					var x = _v17.a;
-					var xs = _v17.b;
 					return x;
 				} else {
 					return A2(
@@ -12114,6 +12113,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												$elm$html$Html$Attributes$class('latex'),
+												$elm$html$Html$Attributes$class('oneline'),
 												$elm$html$Html$Attributes$rows(1),
 												$elm$html$Html$Attributes$readonly(true),
 												$elm$html$Html$Attributes$cols(100)
@@ -12490,6 +12490,507 @@ var $author$project$Main$view = function (model) {
 												$elm$html$Html$text('... ⊢ fun (succ 0) 0 : ...')
 											])),
 										A2(
+										$elm$html$Html$h2,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('Typing rules')
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('\r\n                              Now that you can successfully enter syntactically correct programs, we can\r\n                              have a look at typing rules. These are the rules that decide wheter your\r\n                              program has no typing errors. Here they are all listed for you:\r\n                              ')
+											])),
+										A2(
+										$elm$html$Html$div,
+										_List_Nil,
+										function () {
+											var ws = function () {
+												var _v0 = $hecrj$html_parser$Html$Parser$Util$toVirtualDom(
+													A2(
+														$elm$core$Result$withDefault,
+														_List_Nil,
+														$hecrj$html_parser$Html$Parser$run('<td> &emsp; </td>')));
+												if (_v0.b) {
+													var x = _v0.a;
+													return x;
+												} else {
+													return A2(
+														$elm$html$Html$td,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text(' ')
+															]));
+												}
+											}();
+											return _List_fromArray(
+												[
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(BOOL)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ true:Bool')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(BOOL)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ false:Bool')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(NAT)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ 0:Nat')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(ISZERO)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ iszero:Nat→Bool')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(SUCC)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ succ:Nat→Nat')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(PRED)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ pred:Nat→Nat')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('x:T ∈ Γ')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(VAR)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ x:T')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ t1:Bool')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ t2:T')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ t3:T')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(IF)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$colspan(5)
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ if t1 then t2 else t3:T')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ, x:T0 ⊢ t1:T1')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(ABS)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ λx:T0.t1:T0→T1')
+																		]))
+																]))
+														])),
+													A2(
+													$elm$html$Html$table,
+													_List_Nil,
+													_List_fromArray(
+														[
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ t1:T0→T')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[ws])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_Nil,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ t2:T0')
+																		])),
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$rowspan(2),
+																			$elm$html$Html$Attributes$class('rule')
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('(APP)')
+																		]))
+																])),
+															A2(
+															$elm$html$Html$tr,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	$elm$html$Html$td,
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$Attributes$colspan(3)
+																		]),
+																	_List_fromArray(
+																		[
+																			$elm$html$Html$text('Γ ⊢ t1 t2:T')
+																		]))
+																]))
+														]))
+												]);
+										}()),
+										A2(
 										$elm$html$Html$p,
 										_List_Nil,
 										_List_fromArray(
@@ -12611,9 +13112,9 @@ var $author$project$Main$view = function (model) {
 														]) : _List_Nil),
 												A2(
 													$elm$core$List$map,
-													function (_v0) {
-														var name = _v0.a;
-														var ex = _v0.b;
+													function (_v1) {
+														var name = _v1.a;
+														var ex = _v1.b;
 														return A2(
 															$elm$html$Html$button,
 															_List_fromArray(
