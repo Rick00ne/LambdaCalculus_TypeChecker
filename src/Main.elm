@@ -721,17 +721,17 @@ view model =
                     , p   []
                           [ text
                               """
-                              Abstractions, conditional terms, and the keywords 'iszero', 'succ' and
-                              'pred' take everything that they can reach as a part of them. This means
-                              that they normaly swallow up any subsequent applications, so writing this:
+                              Abstractions and conditional terms take everything that they can reach as
+                              a part of them. This means that they normaly swallow up any subsequent
+                              applications, so writing this:
                               """
                           ]
                     , p   []
-                          [ text "... ⊢ fun succ 0 0 : ..." ]
+                          [ text "... ⊢ fun if true then pred else succ 0 : ..." ]
                     , p   []
                           [ text "... is the same as writing this:" ]
                     , p   []
-                          [ text "... ⊢ fun (succ 0 0) : ..." ]
+                          [ text "... ⊢ fun (if true then pred else succ 0) : ..." ]
                     , p   []
                           [ text 
                               """
@@ -740,7 +740,7 @@ view model =
                               """
                           ]
                     , p   []
-                          [ text "... ⊢ fun (succ 0) 0 : ..." ]
+                          [ text "... ⊢ fun (if true then pred else succ) 0 : ..." ]
                     , h2  []
                           [ text "Typing rules" ]
                     , p   []

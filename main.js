@@ -12452,14 +12452,14 @@ var $author$project$Main$view = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('\r\n                              Abstractions, conditional terms, and the keywords \'iszero\', \'succ\' and\r\n                              \'pred\' take everything that they can reach as a part of them. This means\r\n                              that they normaly swallow up any subsequent applications, so writing this:\r\n                              ')
+												$elm$html$Html$text('\r\n                              Abstractions and conditional terms take everything that they can reach as\r\n                              a part of them. This means that they normaly swallow up any subsequent\r\n                              applications, so writing this:\r\n                              ')
 											])),
 										A2(
 										$elm$html$Html$p,
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('... ⊢ fun succ 0 0 : ...')
+												$elm$html$Html$text('... ⊢ fun if true then pred else succ 0 : ...')
 											])),
 										A2(
 										$elm$html$Html$p,
@@ -12473,7 +12473,7 @@ var $author$project$Main$view = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('... ⊢ fun (succ 0 0) : ...')
+												$elm$html$Html$text('... ⊢ fun (if true then pred else succ 0) : ...')
 											])),
 										A2(
 										$elm$html$Html$p,
@@ -12487,7 +12487,7 @@ var $author$project$Main$view = function (model) {
 										_List_Nil,
 										_List_fromArray(
 											[
-												$elm$html$Html$text('... ⊢ fun (succ 0) 0 : ...')
+												$elm$html$Html$text('... ⊢ fun (if true then pred else succ) 0 : ...')
 											])),
 										A2(
 										$elm$html$Html$h2,
