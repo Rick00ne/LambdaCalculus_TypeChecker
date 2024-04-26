@@ -1550,16 +1550,30 @@ transformProgram : (ParsedContext,ParsedTerm,Type) -> Result String ((Context,Te
 transformProgram (pc,pt,t) =
   let
     context = transformContext 0 pc
+    duplicates list =
+      case list of
+        [] ->
+          False
+        x::rest ->
+          if member x rest
+            then
+              True
+            else
+              duplicates rest
     nextVar = length pc
     av = map (\(v,_)->v) pc
     sv = List.indexedMap (\i e -> (i,e)) av
     transTerm = transformTIter pt av sv nextVar 0 
   in
-  case transTerm of
-    Result.Ok (_,_,(_,term,v)) ->
-      Result.Ok ((context,Ann (term) (t)),v)
-    Result.Err str ->
-      Result.Err str
+  if duplicates av
+    then
+      Result.Err "There are duplicate definitons in context"
+    else  
+      case transTerm of
+        Result.Ok (_,_,(_,term,v)) ->
+          Result.Ok ((context,Ann (term) (t)),v)
+        Result.Err str ->
+          Result.Err str
 
 transformContext : Int -> ParsedContext -> Context
 transformContext index pc =

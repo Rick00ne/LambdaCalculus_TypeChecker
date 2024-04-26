@@ -7634,6 +7634,36 @@ var $author$project$Main$parse = function (input) {
 		$elm$core$Debug$toString,
 		A2($elm$parser$Parser$run, $author$project$Main$programP, input));
 };
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
 var $author$project$Main$transformContext = F2(
 	function (index, pc) {
 		if (!pc.b) {
@@ -7893,11 +7923,29 @@ var $author$project$Main$transformProgram = function (_v0) {
 	var pt = _v0.b;
 	var t = _v0.c;
 	var nextVar = $elm$core$List$length(pc);
+	var duplicates = function (list) {
+		duplicates:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var rest = list.b;
+				if (A2($elm$core$List$member, x, rest)) {
+					return true;
+				} else {
+					var $temp$list = rest;
+					list = $temp$list;
+					continue duplicates;
+				}
+			}
+		}
+	};
 	var context = A2($author$project$Main$transformContext, 0, pc);
 	var av = A2(
 		$elm$core$List$map,
-		function (_v4) {
-			var v = _v4.a;
+		function (_v5) {
+			var v = _v5.a;
 			return v;
 		},
 		pc);
@@ -7909,20 +7957,24 @@ var $author$project$Main$transformProgram = function (_v0) {
 			}),
 		av);
 	var transTerm = A5($author$project$Main$transformTIter, pt, av, sv, nextVar, 0);
-	if (transTerm.$ === 'Ok') {
-		var _v2 = transTerm.a;
-		var _v3 = _v2.c;
-		var term = _v3.b;
-		var v = _v3.c;
-		return $elm$core$Result$Ok(
-			_Utils_Tuple2(
-				_Utils_Tuple2(
-					context,
-					A2($author$project$Main$Ann, term, t)),
-				v));
+	if (duplicates(av)) {
+		return $elm$core$Result$Err('There are duplicate definitons in context');
 	} else {
-		var str = transTerm.a;
-		return $elm$core$Result$Err(str);
+		if (transTerm.$ === 'Ok') {
+			var _v3 = transTerm.a;
+			var _v4 = _v3.c;
+			var term = _v4.b;
+			var v = _v4.c;
+			return $elm$core$Result$Ok(
+				_Utils_Tuple2(
+					_Utils_Tuple2(
+						context,
+						A2($author$project$Main$Ann, term, t)),
+					v));
+		} else {
+			var str = transTerm.a;
+			return $elm$core$Result$Err(str);
+		}
 	}
 };
 var $author$project$Main$processProgramInput = function (input) {
@@ -8491,36 +8543,6 @@ var $hecrj$html_parser$Html$Parser$commentString = A2(
 		$elm$parser$Parser$token('-->')));
 var $elm$parser$Parser$map = $elm$parser$Parser$Advanced$map;
 var $hecrj$html_parser$Html$Parser$comment = A2($elm$parser$Parser$map, $hecrj$html_parser$Html$Parser$Comment, $hecrj$html_parser$Html$Parser$commentString);
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
 var $hecrj$html_parser$Html$Parser$voidElements = _List_fromArray(
 	['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']);
 var $hecrj$html_parser$Html$Parser$isVoidElement = function (name) {
