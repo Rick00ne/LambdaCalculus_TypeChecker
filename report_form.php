@@ -9,7 +9,7 @@
 	   }
 
 	   if (empty($errors)) {
-	   	   $host = 'lambdatypecheck-server.mysql.database.azure.com';
+	   	   $host = $_ENV["DB_HOST"];
 		   $username = $_ENV["DB_ADMIN"];
 		   $password = $_ENV["DB_PASS"];
 	       $db_name  = 'lambdatypecheck-database';

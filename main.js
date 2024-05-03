@@ -6604,7 +6604,7 @@ var $dmy$elm_pratt_parser$Pratt$Advanced$subExpression = F2(
 					})));
 	});
 var $dmy$elm_pratt_parser$Pratt$subExpression = $dmy$elm_pratt_parser$Pratt$Advanced$subExpression;
-var $author$project$Main$brcType = function (config) {
+var $author$project$Main$brcP = function (config) {
 	return A2(
 		$elm$parser$Parser$keeper,
 		A2(
@@ -6779,7 +6779,7 @@ var $author$project$Main$typeP = $dmy$elm_pratt_parser$Pratt$expression(
 			[
 				A3(
 				$dmy$elm_pratt_parser$Pratt$infixRight,
-				10,
+				1,
 				$elm$parser$Parser$symbol('→'),
 				$author$project$Main$Fun)
 			]),
@@ -6790,7 +6790,7 @@ var $author$project$Main$typeP = $dmy$elm_pratt_parser$Pratt$expression(
 					$elm$parser$Parser$keeper,
 					$elm$parser$Parser$succeed($author$project$Main$TFree),
 					$author$project$Main$freeType)),
-				$author$project$Main$brcType
+				$author$project$Main$brcP
 			]),
 		spaces: $elm$parser$Parser$spaces
 	});
@@ -7171,18 +7171,6 @@ var $author$project$Main$SuccPT = {$: 'SuccPT'};
 var $author$project$Main$VarPT = function (a) {
 	return {$: 'VarPT', a: a};
 };
-var $author$project$Main$brcTerm = function (config) {
-	return A2(
-		$elm$parser$Parser$keeper,
-		A2(
-			$elm$parser$Parser$ignorer,
-			$elm$parser$Parser$succeed($elm$core$Basics$identity),
-			$elm$parser$Parser$symbol('(')),
-		A2(
-			$elm$parser$Parser$ignorer,
-			A2($dmy$elm_pratt_parser$Pratt$subExpression, 0, config),
-			$elm$parser$Parser$symbol(')')));
-};
 var $author$project$Main$CondPT = F3(
 	function (a, b, c) {
 		return {$: 'CondPT', a: a, b: b, c: c};
@@ -7245,7 +7233,7 @@ var $author$project$Main$condTerm = function (config) {
 						$elm$parser$Parser$ignorer,
 						A2(
 							$elm$parser$Parser$ignorer,
-							A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config),
+							A2($dmy$elm_pratt_parser$Pratt$subExpression, 0, config),
 							$elm$parser$Parser$spaces),
 						$elm$parser$Parser$keyword('then')),
 					$elm$parser$Parser$spaces)),
@@ -7255,11 +7243,11 @@ var $author$project$Main$condTerm = function (config) {
 					$elm$parser$Parser$ignorer,
 					A2(
 						$elm$parser$Parser$ignorer,
-						A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config),
+						A2($dmy$elm_pratt_parser$Pratt$subExpression, 0, config),
 						$elm$parser$Parser$spaces),
 					$elm$parser$Parser$keyword('else')),
 				$elm$parser$Parser$spaces)),
-		A2($dmy$elm_pratt_parser$Pratt$subExpression, 3, config));
+		A2($dmy$elm_pratt_parser$Pratt$subExpression, 0, config));
 };
 var $dmy$elm_pratt_parser$Pratt$Advanced$constant = F3(
 	function (constantParser, e, _v0) {
@@ -7468,7 +7456,7 @@ var $author$project$Main$lamTerm = function (config) {
 					A2($elm$parser$Parser$ignorer, $author$project$Main$typeP, $elm$parser$Parser$spaces),
 					$elm$parser$Parser$symbol('.')),
 				$elm$parser$Parser$spaces)),
-		A2($dmy$elm_pratt_parser$Pratt$subExpression, 1, config));
+		A2($dmy$elm_pratt_parser$Pratt$subExpression, 0, config));
 };
 var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 	{
@@ -7476,7 +7464,7 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 			[
 				A3(
 				$dmy$elm_pratt_parser$Pratt$infixLeft,
-				5,
+				1,
 				$elm$parser$Parser$symbol(''),
 				$author$project$Main$AppPT)
 			]),
@@ -7509,7 +7497,7 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 					$elm$parser$Parser$succeed($author$project$Main$VarPT),
 					$author$project$Main$varP)),
 				$author$project$Main$lamTerm,
-				$author$project$Main$brcTerm,
+				$author$project$Main$brcP,
 				$dmy$elm_pratt_parser$Pratt$literal(
 				A2(
 					$elm$parser$Parser$keeper,

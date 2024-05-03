@@ -1457,9 +1457,9 @@ typeP =
   Pratt.expression
     { oneOf = 
       [ Pratt.literal (Parser.succeed TFree |= freeType)
-      , brcType
+      , brcP
       ]
-    , andThenOneOf = [ Pratt.infixRight 10 (Parser.symbol "→") (Fun) ]
+    , andThenOneOf = [ Pratt.infixRight 1 (Parser.symbol "→") (Fun) ]
     , spaces = Parser.spaces}
 
 freeType : Parser String
@@ -1469,13 +1469,6 @@ freeType =
     , inner = Char.isAlphaNum
     , reserved = Set.empty
     }
-
-brcType : Pratt.Config Type -> Parser Type
-brcType config =
-  Parser.succeed identity
-      |. Parser.symbol "("
-      |= Pratt.subExpression 0 config
-      |. Parser.symbol ")"
 
 termP : Parser ParsedTerm
 termP =
@@ -1489,16 +1482,16 @@ termP =
       , Pratt.constant (Parser.keyword "pred") (PredPT)
       , Pratt.literal (Parser.succeed VarPT |= varP)
       , lamTerm
-      , brcTerm
+      , brcP
       , Pratt.literal (Parser.succeed IntPT |= (backtrackable Parser.int))
       ]
     , andThenOneOf =
-        [ Pratt.infixLeft 5 (Parser.symbol "") (AppPT)
+        [ Pratt.infixLeft 1 (Parser.symbol "") (AppPT)
         ]
     , spaces = Parser.spaces}
 
-brcTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
-brcTerm config =
+brcP : Pratt.Config expr -> Parser expr
+brcP config =
   Parser.succeed identity
     |. Parser.symbol "("
     |= Pratt.subExpression 0 config
@@ -1509,15 +1502,15 @@ condTerm config =
   Parser.succeed CondPT
     |. Parser.keyword "if"
     |. Parser.spaces
-    |= Pratt.subExpression 3 config
+    |= Pratt.subExpression 0 config
     |. Parser.spaces
     |. Parser.keyword "then"
     |. Parser.spaces
-    |= Pratt.subExpression 3 config
+    |= Pratt.subExpression 0 config
     |. Parser.spaces
     |. Parser.keyword "else"
     |. Parser.spaces
-    |= Pratt.subExpression 3 config
+    |= Pratt.subExpression 0 config
 
 lamTerm : Pratt.Config ParsedTerm -> Parser ParsedTerm
 lamTerm config = 
@@ -1532,7 +1525,7 @@ lamTerm config =
     |. Parser.spaces
     |. Parser.symbol "."
     |. Parser.spaces
-    |= Pratt.subExpression 1 config
+    |= Pratt.subExpression 0 config
 
 
 parse : String -> Result String (ParsedContext,ParsedTerm,Type)
