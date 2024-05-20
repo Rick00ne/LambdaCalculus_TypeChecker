@@ -901,7 +901,9 @@ view model =
                         [text "CALCULUS TypeChecker"]
                 ]
           , div []
-                [ button [ id "help_button"] [] ]
+                [ button [ id "theme_button"] []
+                , button [ id "help_button"]  [] 
+                ]
           ]
       , div                                           --App
           [ class "app" ]
@@ -1474,16 +1476,16 @@ termP : Parser ParsedTerm
 termP =
   Pratt.expression
     { oneOf =
-      [ condTerm
-      , Pratt.constant (Parser.keyword "true") (BoolPT True)
+      [ Pratt.constant (Parser.keyword "true") (BoolPT True)
       , Pratt.constant (Parser.keyword "false") (BoolPT False)
       , Pratt.constant (Parser.keyword "iszero") (IsZeroPT)
       , Pratt.constant (Parser.keyword "succ") (SuccPT)
       , Pratt.constant (Parser.keyword "pred") (PredPT)
       , Pratt.literal (Parser.succeed VarPT |= varP)
+      , Pratt.literal (Parser.succeed IntPT |= (backtrackable Parser.int))
+      , condTerm
       , lamTerm
       , brcP
-      , Pratt.literal (Parser.succeed IntPT |= (backtrackable Parser.int))
       ]
     , andThenOneOf =
         [ Pratt.infixLeft 1 (Parser.symbol "") (AppPT)

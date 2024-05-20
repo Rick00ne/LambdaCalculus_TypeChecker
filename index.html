@@ -7,6 +7,10 @@
   <title>λ-Calculus TypeChecker</title>
   <script src="main.js"></script>
   <style>
+    :root{
+      color-scheme: dark;
+      color:light-dark(black,black);
+    }
   	body {
   		margin: 0;
   		padding: 0;
@@ -39,11 +43,11 @@
   	}
     .overlay_window {
       z-index: 1;
-      border: solid darkorange 2px;
+      border: solid light-dark(rgb(102, 56, 0),darkorange) 2px;
       border-radius: 5px; 
       display: flex;
       flex-direction: column;
-      background: rgba(55,55,55,1);
+      background: light-dark(rgba(200,200,200,1),rgba(55,55,55,1));
       width: max-content;
       max-width: 75%;
       max-height: 80vh;
@@ -56,7 +60,7 @@
       box-shadow: inset black 0 0 1em;
     }
     .overlay_window h1 {
-      color: darkorange;
+      color: light-dark(rgb(102, 56, 0),darkorange);
       margin-top: 0;
     }
     .overlay_window > div {
@@ -71,7 +75,7 @@
       box-shadow: inset black 0 0 10px;
     }
     .overlay_window> div::-webkit-scrollbar-thumb {
-      background: black;
+      background: light-dark(silver,black);
     }
     #help_overlay .overlay_window>div>div{ /*Rules list*/
       display: flex;
@@ -84,6 +88,7 @@
       display: block;
       resize: none;
       font-size: inherit;
+      color:inherit;
       text-wrap: nowrap;
       overflow: auto;
       margin: 0.2em auto;
@@ -100,18 +105,18 @@
     }
     .latex::-webkit-scrollbar-thumb,
     form textarea::-webkit-scrollbar-thumb {
-      background: black;
+      background: light-dark(silver,black);
     }
     form textarea{
       overflow: auto;
     }
     input[type="submit"]{
       display: block;
-      border: 0.1em solid darkorange;
+      border: 0.1em solid light-dark(rgb(102, 56, 0),darkorange);
       border-radius: 0.2em;
       font-size: inherit;
-      color: darkorange;
-      background: rgba(0,0,0,0.2);
+      color: light-dark(rgb(102, 56, 0),darkorange);
+      background: light-dark(rgba(255,255,255,0.2),rgba(0,0,0,0.2));
       margin:auto;
     }
   	.header {
@@ -120,12 +125,12 @@
   		background: 
   			linear-gradient(
 	  			180deg,
-	  			rgba(182,100,0,1) 0%,
-	  			rgba(0,0,0,1) 30%,
-	  			rgba(0,0,0,1) 60%,
-  				rgba(33,33,33,1) 100%
+	  			light-dark(rgba(255, 198, 128,1),rgba(182,100,0,1)) 0%,
+	  			light-dark(rgba(200,200,200,1),rgba(0,0,0,1)) 30%,
+	  			light-dark(rgba(200,200,200,1),rgba(0,0,0,1)) 60%,
+  				light-dark(rgba(160,160,160,1),rgba(33,33,33,1)) 100%
   			);
-  		color: darkorange;
+  		color: light-dark(rgb(102, 56, 0),darkorange);
   		display: grid;
     	grid-template-columns: 1fr auto 1fr;
     	align-items: end;
@@ -135,7 +140,7 @@
     	background-size: 30px;
     	width: 34px;
     	height: 34px;
-    	border: solid 2px darkorange;
+    	border: solid 2px light-dark(rgb(102, 56, 0),darkorange);
   	}
   	#report_button:hover {
   		background-color: darkorange;
@@ -146,9 +151,21 @@
       background-size: 30px;
       width: 34px;
       height: 34px;
-      border: solid 2px darkorange;
+      border: solid 2px light-dark(rgb(102, 56, 0),darkorange);
     }
     #help_button:hover {
+      background-color: darkorange;
+      border-color: orange;
+    }
+    #theme_button {
+      background: orange url(theme.svg);
+      background-size: 30px;
+      width: 34px;
+      height: 34px;
+      border: solid 2px light-dark(rgb(102, 56, 0),darkorange);
+      margin-right: 0.2em;
+    }
+    #theme_button:hover {
       background-color: darkorange;
       border-color: orange;
     }
@@ -165,7 +182,7 @@
   	}
   	.logo {
   		width: 1em;
-  		outline: darkorange solid 0.1em;
+  		outline: light-dark(rgb(102, 56, 0),darkorange) solid 0.1em;
   		border-radius: 50%;
   		margin-right: 0.2em;
   	}
@@ -180,7 +197,7 @@
   	}
   	.app {
   		box-shadow: inset black 0 0 50pt;
-  		background: rgba(55,55,55,1);
+  		background: light-dark(rgb(200,200,200),rgb(55,55,55));
   		flex: 1;
   		padding: 10pt;
   	}
@@ -195,7 +212,8 @@
   	.program_input textarea {
   		resize: vertical;
   		font:inherit;
-  		background: rgb(211,134,41);
+  		background: light-dark(peachpuff,rgb(211,134,41));
+      color: inherit;
   		border: inset black 2px;
   		min-height: 4.5em;
   		height: 0;
@@ -205,7 +223,7 @@
       width:100%;
   	}
   	.program_input textarea::-webkit-scrollbar-corner {
-  		background: rgb(211,134,41);
+  		background: light-dark(peachpuff,rgb(211,134,41));
   	}
   	.program_input textarea::-webkit-scrollbar-thumb {
   		background-color: black;
@@ -231,7 +249,7 @@
       flex-direction: column;
       position:absolute;
       overflow: hidden;
-      border: solid darkorange 0.1em;
+      border: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
       border-radius: 0.25em 0 0.25em 0.25em;
       width: max-content;
       top: 1.3em;
@@ -243,7 +261,7 @@
     .examples button{
       border: none;
       border-radius: 0;
-      background-color: rgba(0,0,0,0.7);
+      background-color: light-dark(rgba(255, 255, 255,0.7),rgba(0,0,0,0.7));
     }
     .examples button:not(:last-child){
       border-bottom: solid 0.1em
@@ -284,10 +302,10 @@
   		margin: 10pt auto 0;
   		width: max-content;
   		padding: 5pt;
-  		border: solid darkorange 0.1em;
+  		border: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
   		border-radius: 5pt 5pt 0 0;
   		border-bottom: none;
-  		background: rgba(255,165,0,0.3);
+  		background: color-mix(in srgb,light-dark(rgb(194, 103, 0),orange), transparent 70%);
   		transition: 
   			border-color 200ms ease-in-out,
   			background   200ms ease-in-out;
@@ -318,7 +336,7 @@
   		flex-direction: column-reverse;
   		align-items: center;
   		flex-wrap: wrap;
-  		background: rgb(211,134,41);
+  		background: light-dark(peachpuff,rgb(211,134,41));
   		width: 80vw;
   		min-width: 1000px;
   		transition: 
@@ -361,19 +379,19 @@
   		font-weight: bold;
   	}
   	.tree.off {
-  		background: rgb(33,33,33);
+  		background: light-dark(rgb(160, 160, 160),rgb(33,33,33));
   	}
   	.tree::-webkit-scrollbar-thumb {
   		background-color: orange;
-  		border: solid darkorange 2px;
+  		border: solid light-dark(rgb(102, 56, 0),darkorange) 2px;
   		border-radius: 6px
   	}
   	.tree::-webkit-scrollbar-track {
-  	  background: rgb(33,33,33);
+  	  background: light-dark(rgb(160, 160, 160),rgb(33,33,33));
   	  border: inset black 2px;
   	}
   	.tree::-webkit-scrollbar-corner {
-  		background: rgb(33,33,33);
+  		background: light-dark(rgb(160, 160, 160),rgb(33,33,33));
   	}
     .program_input textarea::-webkit-resizer,
   	.tree::-webkit-resizer {
@@ -381,16 +399,16 @@
   	    background-size: 100%;
   	}
   	.control, .zoom {
-  		color: darkorange;
+  		color: light-dark(rgb(102, 56, 0),darkorange);
   	}
   	.control {
   		margin: 0 auto;
   		width: max-content;
   		padding: 5pt;
-  		border: solid darkorange 0.1em;
+  		border: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
   		border-radius: 0 0 5pt 5pt;
   		border-top: none;
-  		background: rgba(255,165,0,0.3);
+  		background: color-mix(in srgb,light-dark(rgb(194, 103, 0),orange), transparent 70%);
   		transition: 
   			border-color 200ms ease-in-out,
   			background   200ms ease-in-out;
@@ -413,11 +431,11 @@
   	}
   	.control label {
   		margin: 0.1em;
-  		border: 0.1em solid darkorange;
+  		border: 0.1em solid light-dark(rgb(102, 56, 0),darkorange);
 	    border-radius: 0.2em;
 	    font-size: inherit;
-	    color: darkorange;
-	    background: rgba(0,0,0,0.2);
+	    color: light-dark(rgb(102, 56, 0),darkorange);
+	    background: light-dark(rgba(255, 255, 255,0.2),rgba(0,0,0,0.2));
 	    padding: 2px 2px 2px 6px;
     	display: inline-grid;
     	width: 9em;
@@ -450,12 +468,12 @@
   		color: maroon;
   	}
   	.control.off label {
-  		border-color: darkgray;
-	    color: darkgray;
+  		border-color: light-dark(gray,darkgray);
+	    color: light-dark(gray,darkgray);
 	    background: rgba(255,255,255,0.2);
   	}
   	.control:not(.off) label:hover {
-		  background: rgba(0,0,0,0.9);
+		  background: light-dark(rgba(255, 255, 255,0.8),rgba(0,0,0,0.9));
 	  }
     #export_button{
       width: max-content;
@@ -475,14 +493,14 @@
   		line-height: 1em;
   		height: 4.5em;
   		overflow-x: scroll;
-  		border-color: darkorange;
-  		background: rgba(255,165,0,0.3);
+  		border-color: light-dark(rgb(102, 56, 0),darkorange);
+  		background: light-dark(rgba(194, 103, 0, 0.3),rgba(255,165,0,0.3));
   		transition: 
   			border-color 200ms ease-in-out,
   			background   200ms ease-in-out;
   	}
   	.vals_container > div:last-child::-webkit-scrollbar-thumb {
-  		background-color: orange;
+  		background-color: light-dark(rgb(194, 103, 0),orange);
   		border-radius: 0.25em
   	}
   	.vals_container > div:last-child > div {
@@ -490,25 +508,25 @@
   		padding-right: 0.5em;
   	}
   	.vals_container > div:last-child > div:nth-child(4n):not(:last-child) {
-  		border-right: solid darkorange 0.1em;
+  		border-right: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
   	}
   	.vals_container > div:last-child > div:nth-child(4n+3):not(:last-child):not(:nth-last-child(2)) {
-  		border-right: solid darkorange 0.1em;
+  		border-right: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
   	}
   	.vals_container > div:last-child > div:nth-child(4n+2):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)) {
-  		border-right: solid darkorange 0.1em;
+  		border-right: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
   	}
   	.vals_container > div:last-child > div:nth-child(4n+1):not(:last-child):not(:nth-last-child(2)):not(:nth-last-child(3)):not(:nth-last-child(4)) {
-  		border-right: solid darkorange 0.1em;
+  		border-right: solid light-dark(rgb(102, 56, 0),darkorange) 0.1em;
   	}
   	.vals_container > div:first-child {
-  		color: white;
+  		color: light-dark(black,white);
   		font-weight: bold;
   	}
   	.vals_container > div.off, .control.off, .zoom.off {
   		border-color: gray;
   		background: rgba(33,33,33,0.3);
-  		color: darkgray;
+  		color: light-dark(gray,darkgray);
   	}
     .vals_container{
       min-width: 15em;
@@ -520,21 +538,21 @@
       justify-content: center;
     }
   	button {
-	    border: 0.1em solid darkorange;
+	    border: 0.1em solid light-dark(rgb(102, 56, 0),darkorange);
 	    border-radius: 0.2em;
 	    font-size: inherit;
-	    color: darkorange;
-	    background: rgba(0,0,0,0.2);
+	    color: light-dark(rgb(102, 56, 0),darkorange);
+	    background: light-dark(rgba(255, 255, 255,0.3),rgba(0,0,0,0.2));
   	}
   	button:hover, input[type="submit"]:hover {
-  		background: rgba(0,0,0,0.9);
+  		background: light-dark(rgba(255, 255, 255,0.8),rgba(0,0,0,0.9));
   	}
   	button:active, input[type="submit"]:active {
-  		background: rgba(0,0,0,0.5);
+  		background: light-dark(rgba(255, 255, 255,1),rgba(0,0,0,0.5));
   	}
   	button:disabled {
-  	    border-color: darkgray;
-  	    color: darkgray;
+  	    border-color: light-dark(gray,darkgray);
+  	    color: light-dark(gray,darkgray);
   	    background: rgba(255,255,255,0.2);
   	}
 
@@ -573,6 +591,7 @@
     var helpOverlay = document.getElementById("help_overlay");
     var unindented = document.getElementById("unindented");
     var latexTree = document.getElementById("latex_tree");
+    var root = document.querySelector(':root');
 
     app.ports.reformat.subscribe(function(){
       requestAnimationFrame(() => {
@@ -621,6 +640,7 @@
 	  document.getElementById("report_button").onclick = reportOverlayOn;
     document.getElementById("export_button").onclick = exportOverlayOn;
     document.getElementById("help_button").onclick = helpOverlayOn;
+    document.getElementById("theme_button").onclick = switchTheme;
     const elems = document.getElementsByClassName("overlay_background");
     for (let i = 0; i < elems.length; i++) {
       elems[i].onclick = function()
@@ -678,6 +698,15 @@
 
     function helpOverlayOff(){
       helpOverlay.style.display = "none";
+    }
+
+    function switchTheme(){
+      if (getComputedStyle(root).getPropertyValue('color-scheme')=='dark'){
+        root.style.setProperty('color-scheme', 'light')
+      }
+      else{
+        root.style.setProperty('color-scheme', 'dark')
+      }
     }
   </script>
   <script src="validate.min.js"></script>

@@ -7470,7 +7470,6 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 			]),
 		oneOf: _List_fromArray(
 			[
-				$author$project$Main$condTerm,
 				A2(
 				$dmy$elm_pratt_parser$Pratt$constant,
 				$elm$parser$Parser$keyword('true'),
@@ -7496,13 +7495,14 @@ var $author$project$Main$termP = $dmy$elm_pratt_parser$Pratt$expression(
 					$elm$parser$Parser$keeper,
 					$elm$parser$Parser$succeed($author$project$Main$VarPT),
 					$author$project$Main$varP)),
-				$author$project$Main$lamTerm,
-				$author$project$Main$brcP,
 				$dmy$elm_pratt_parser$Pratt$literal(
 				A2(
 					$elm$parser$Parser$keeper,
 					$elm$parser$Parser$succeed($author$project$Main$IntPT),
-					$elm$parser$Parser$backtrackable($elm$parser$Parser$int)))
+					$elm$parser$Parser$backtrackable($elm$parser$Parser$int))),
+				$author$project$Main$condTerm,
+				$author$project$Main$lamTerm,
+				$author$project$Main$brcP
 			]),
 		spaces: $elm$parser$Parser$spaces
 	});
@@ -13064,6 +13064,13 @@ var $author$project$Main$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$id('theme_button')
+									]),
+								_List_Nil),
 								A2(
 								$elm$html$Html$button,
 								_List_fromArray(
